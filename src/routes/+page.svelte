@@ -12,14 +12,13 @@
 	import { LayersQuery } from "$lib/cqrs/queries/layers"
 	import { ProjectQuery } from "$lib/cqrs/queries/project"
 	import { DrawingSystem } from "$lib/ecs/systems/drawing"
-	import { Quadrilateral, Vector } from "$lib/ecs/components/drawings"
+	import { DrawableStyles, Quadrilateral, Vector } from "$lib/ecs/components/drawings"
 
 	let name = "Novum"
-	let projectName = "Untitled Project"
 	let canvas: HTMLCanvasElement | null
-	let canvasContext: CanvasRenderingContext2D | null = null
 	let error: string | null = null
 	let color: string = "#000000"
+	let thickness: number = 1
 	let layer: DisplayableLayer | null = null
 	let render: boolean = true
 
@@ -38,15 +37,16 @@
 	const layersQuery = new LayersQuery(viewRepo, ecs)
 	const cqrs = new CQRS(new ArtistAggregator(ecs), viewRepo)
 
-	async function createNewLayer() {
-		const layer = ecs.createEntity()
-        layer.addComponent(new Layer("new layer"))
-		ecs.addEntity(layer)
-        await cqrs.dispatch(layer.id + "", new NewLayerCommand("new layer"))
+	$: style = new DrawableStyles()
 
+	async function createNewLayer() {
+		const entity = ecs.createEntity()
+        entity.addComponent(new Layer("new layer"))
+		ecs.addEntity(entity)
+
+        await cqrs.dispatch(entity.id + "", new NewLayerCommand("new layer"))
 		await viewRepo.load("")
-		const layers = await layersQuery.query({})
-		console.log("LAYERS", layers)
+		await layersQuery.query({})
 	}
 
 	function selectLayer(selectedLayerentity: DisplayableLayer) {
@@ -58,10 +58,15 @@
 			console.warn("Layer not selected")
             return
         }
-		cqrs.dispatch(layer.name + "", new StartDrawingCommand(name, event.offsetX, event.offsetY, color, 1, new Quadrilateral(
+		cqrs.dispatchWithMetadata(layer.id + "", new StartDrawingCommand(
 			new Vector(event.offsetX, event.offsetY),
-			new Vector(event.offsetX, event.offsetY),
-		)))
+			new Quadrilateral(
+				new Vector(event.offsetX, event.offsetY),
+				new Vector(event.offsetX, event.offsetY),
+			)),
+			{
+				userName: layer.name,
+			})
 	}
 
 	async function endDrawing(event: MouseEvent) {
@@ -69,10 +74,16 @@
 			console.warn("Layer not selected")
             return
         }
-		cqrs.dispatch(layer.name + "", new EndDrawingCommand(name, event.offsetX, event.offsetY, color, 1, new Quadrilateral(
+		cqrs.dispatchWithMetadata(layer.name + "", new EndDrawingCommand(
 			new Vector(event.offsetX, event.offsetY),
-			new Vector(event.offsetX, event.offsetY),
-		)))
+			new Quadrilateral(
+				new Vector(event.offsetX, event.offsetY),
+				new Vector(event.offsetX, event.offsetY),
+			)
+		),
+			{
+				userName: layer.name,
+			})
     }
 
 	function loop() {
@@ -83,10 +94,8 @@
 	}
 
 	onMount(async () => {
-		const entities = await viewRepo.load("")
 		await layersQuery.query({})
-		ecs.stateFromStorage(entities)
-		canvas = document.getElementById("canvas") as HTMLCanvasElement
+		await ecs.stateFromStorage()
 	
 		if (!canvas) {
 			error = "Could not find canvas element"
@@ -96,7 +105,6 @@
 		match(canvas.getContext("2d"))
 			.with(P.nonNullable, ctx => {
 				console.log("Got 2d context from canvas")
-				canvasContext = ctx
 				ecs.registerSystem(new DrawingSystem(ctx))
 				if (render) loop()
 			})

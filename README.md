@@ -2,6 +2,8 @@
 
 "new"
 
+> I didn't get time to finish this but it's not a million miles off. Need to add a translation from ES event to ECS components and then to add a simple P2P WebRTC connection manager to send and receive events over the line.
+
 a proof of concept figma like collaborative drawing app using SvelteKit, Typescript and WebRTC.
 
 It approaches the problem using the following ideas:

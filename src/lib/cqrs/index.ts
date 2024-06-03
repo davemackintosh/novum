@@ -1,5 +1,16 @@
 import type { ArtistCommands, DrawingEvents } from "../../types/commands-events"
 
+export interface PersistableEvent {
+	aggregateType: string
+	aggregateId: string
+    sequence: number
+    eventType: string
+    eventVersion: string
+    payload: any
+    metadata: any
+    timestamp: number
+}
+
 export class AggregateError extends Error {
 	constructor(message: string) {
 		super(message)
@@ -8,7 +19,7 @@ export class AggregateError extends Error {
 }
 
 export abstract class Aggregate<Events extends DrawingEvents, Commands extends ArtistCommands> {
-	private readonly name: string
+	public readonly name: string
 	private readonly version: number
 
 	constructor(name: string, version: number) {
@@ -54,9 +65,16 @@ export abstract class ViewRepository<Events extends DrawingEvents, V extends Vie
 }
 
 export class EventRepository<Events extends DrawingEvents> {
-	async commit(events: Events[]): Promise<void> {
+	async commit(events: PersistableEvent[]): Promise<void> {
 		// In the real world, we would commit these events to a database.
 		console.info("Committing events", events)
+
+		const existingEvents = JSON.parse(localStorage.getItem("events") || "[]")
+
+		localStorage.setItem("events", JSON.stringify([
+			...existingEvents,
+			...events,
+		]))
 
 		return Promise.resolve()
 	}
@@ -64,20 +82,31 @@ export class EventRepository<Events extends DrawingEvents> {
 
 export class CQRS<A extends Aggregate<Events, ArtistCommands>, Events extends DrawingEvents> {
 	private readonly aggregate: A
-	private readonly repository: EventRepository<Events>;
+	private readonly eventRepository: EventRepository<Events>;
 	private readonly viewRepository: ViewRepository<Events, View<Events>>;
 
 	constructor(aggregate: A, viewRepository: ViewRepository<Events, View<Events>>) {
 		this.aggregate = aggregate
-		this.repository = new EventRepository<DrawingEvents>()
+		this.eventRepository = new EventRepository<DrawingEvents>()
 		this.viewRepository = viewRepository
 	}
 
 	// Handle a command.
-	async dispatch(aggregateId: string, command: ArtistCommands): Promise<Events[]> { 
+	async dispatchWithMetadata(aggregateId: string, command: ArtistCommands, metadata: any): Promise<Events[]> { 
 		const events = await this.aggregate.handle_command(aggregateId, command)
+		let currentSequence = JSON.parse(localStorage.getItem("events") || "[]").length
+		const persistableEvents: PersistableEvent[] = events.map((event, i) => ({
+                aggregateType: this.aggregate.name,
+                aggregateId: aggregateId,
+                sequence: currentSequence++,
+                eventType: event.constructor.name,
+                eventVersion: event.version,
+                payload: event,
+                metadata: metadata,
+                timestamp: Date.now()
+		}))
 
-		await this.repository.commit(events)
+		await this.eventRepository.commit(persistableEvents)
 
 		for (const event of events) {
 			// In a real world CQRS implementation, this would be triggered by a message queue,
@@ -88,5 +117,9 @@ export class CQRS<A extends Aggregate<Events, ArtistCommands>, Events extends Dr
 		}
 
 		return events
+	}
+
+	async dispatch(aggregateId: string, command: ArtistCommands): Promise<Events[]> {
+		return this.dispatchWithMetadata(aggregateId, command, null)
 	}
 }

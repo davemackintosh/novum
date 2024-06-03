@@ -1,5 +1,7 @@
+import type { PersistableEvent } from "$lib/cqrs"
 import type { ProjectView } from "$lib/cqrs/views/project"
 import { P, match } from "ts-pattern"
+import { Layer } from "./components/layer"
 
 export class Entity {
 	public readonly id: number
@@ -78,15 +80,14 @@ export class ECS {
         this.entities.splice(this.entities.indexOf(entity), 1)
 	}
 
-	stateFromStorage(projectView: ProjectView): void { 
-		projectView.layers.forEach(layer => {
-			const entity = new Entity(layer.id)
-			this.addEntity(entity)
-			for (const component of layer.components) {
-				entity.addComponent(component)
-			}
-		})
-		
+	async stateFromStorage(): Promise<void> { 
+		const storedEvents: PersistableEvent[] = JSON.parse(localStorage.getItem("events") || "[]")
+		const newEntities = this.persistableEventsToEntities(storedEvents)
+
+		for (const newEntity of newEntities) {
+			this.addEntity(newEntity)
+		}
+
 		console.log("applied ecs state from project view", this)
 	}
 	
@@ -102,4 +103,25 @@ export class ECS {
 			}
 		}
     }
+
+	persistableEventsToEntities(events: PersistableEvent[]): Entity[] {
+		const entities: Entity[] = events.map(event => {
+			const entity = this.createEntity()
+
+			match(event.eventType)
+				.with("NewLayerEvent", () => {
+					const component = new Layer(event.payload)
+					entity.addComponent(component)
+				})
+				.with("StartLineEvent", () => { 
+				})
+				.otherwise(() => {
+					throw new Error(`Unknown event type: ${event.eventType}`)
+				})
+			
+			return entity
+		})
+
+		return entities
+	}
 }

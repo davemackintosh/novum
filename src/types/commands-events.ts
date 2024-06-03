@@ -8,39 +8,27 @@
 // our code organised into verbs and nouns that means we have the flexibility to change our
 // read model any time we want without any historical data loss or architectural complexity.
 
-import type { Drawable, Line, Quadrilateral } from "../lib/ecs/components/drawings"
-
-export interface ESEvent {
-	aggregateId: string
-	aggregateType: string
-	eventType: string
-	// We will take care of the serialization of the payload to JSON on commit.
-	payload: Event
-	timestamp: Date
-	version: number
-	sequenceNumber: number
-}
+import type { PersistableEvent } from "$lib/cqrs"
+import { match } from "ts-pattern"
+import type { Drawable, Line, Quadrilateral, Vector } from "../lib/ecs/components/drawings"
+import { DrawableStyles} from "../lib/ecs/components/drawings"
 
 /// COMMANDS
 // Commands result in events that ultimately changes what anyone will and can see.
 
 export class JoinCommand {
 	userName: string
-	userId: string
 
-	constructor(userName: string, userId: string) {
+	constructor(userName: string) {
 		this.userName = userName
-		this.userId = userId
 	}
 }
 
 export class LeaveCommand {
-	userName: string
 	userId: string
 	destroy?: boolean
 
-	constructor(userName: string, userId: string, destroy: boolean = false) {
-		this.userName = userName
+	constructor(userId: string, destroy: boolean = false) {
 		this.userId = userId
 		this.destroy = destroy
 	}
@@ -54,41 +42,28 @@ export class NewLayerCommand {
     }
 }
 
-export class StartDrawingCommand {
-	userId: string
-	x: number
-	y: number
-	color: string
-	width: number
+export class DrawingCommandBase {
+	start: Vector
 	type: Drawable
+	style: DrawableStyles
 
 
-	constructor(userId: string, x: number, y: number, color: string, width: number, type: Drawable) {
-		this.userId = userId
-		this.x = x
-		this.y = y
-		this.color = color
-		this.width = width
+	constructor(start: Vector, type: Drawable, styles: DrawableStyles = new DrawableStyles()) {
+		this.start = start
 		this.type = type
+		this.style = styles
 	}
 }
 
-export class EndDrawingCommand {
-	userId: string
-	x: number
-	y: number
-	color: string
-	width: number
-	type: Drawable
+export class StartDrawingCommand extends DrawingCommandBase {
+	constructor(start: Vector, type: Drawable, styles: DrawableStyles = new DrawableStyles()) {
+		super(start, type, styles)
+	}
+}
 
-
-	constructor(userId: string, x: number, y: number, color: string, width: number, type: Drawable) {
-		this.userId = userId
-		this.x = x
-		this.y = y
-		this.color = color
-		this.width = width
-		this.type = type
+export class EndDrawingCommand extends DrawingCommandBase {
+	constructor(start: Vector, type: Drawable, styles: DrawableStyles = new DrawableStyles()) {
+		super(start, type, styles)
 	}
 }
 
@@ -99,45 +74,58 @@ export type ArtistCommands = JoinCommand | LeaveCommand | StartDrawingCommand | 
 /// EVENTS
 // Events are the result of commands and are persisted to the event store (usually a database.)
 
-export class JoinEvent {
+abstract class EventBase {
+	version: string
+
+	constructor(version: string) {
+        this.version = version
+    }
+}
+
+export class JoinEvent extends EventBase {
 	userName: string
 	userId: string
 
 	constructor(userName: string, userId: string) {
+		super("1.0.0")
 		this.userName = userName
-		this.userId = userId
+		// generate a unique id for the user.
+		this.userId = Math.random().toString(36)
 	}
 }
 
-export class LeaveEvent {
+export class LeaveEvent extends EventBase {
 	userName: string
 	userId: string
 	destroy?: boolean
 
 	constructor(userName: string, userId: string, destroy?: boolean) {
+		super("1.0.0")
 		this.userName = userName
 		this.userId = userId
 		this.destroy = destroy
 	}
 }
 
-export class NewLayerEvent {
+export class NewLayerEvent extends EventBase {
 	name: string
 
-	constructor(name: string) {
+	constructor(name: string = "new layer") {
+		super("1.0.0")
 		this.name = name
 	}
 }
 
-export class DestroyArtistsArt {
+export class DestroyArtistsArt extends EventBase {
 	userId: string
 
 	constructor(userId: string) {
+		super("1.0.0")
 		this.userId = userId
 	}
 }
 
-class DrawingEvent {
+class DrawingEvent extends EventBase {
 	userId: string
 	x: number
 	y: number
@@ -145,6 +133,7 @@ class DrawingEvent {
 	width: number
 
 	constructor(userId: string, x: number, y: number, color: string, width: number) {
+		super("1.0.0")
 		this.userId = userId
 		this.x = x
 		this.y = y
@@ -177,5 +166,21 @@ export class EndQuadrilateralEvent extends DrawingEvent {
 	}
 }
 
-export type DrawingEvents = JoinEvent | LeaveEvent | StartLineEvent | EndLineEvent | DestroyArtistsArt | NewLayerCommand
+export type DrawingEvents = JoinEvent | LeaveEvent | StartLineEvent | EndLineEvent | DestroyArtistsArt | NewLayerEvent
 /// </EVENTS
+
+export function persistableEventsToDrawingEvents(events: PersistableEvent[]): DrawingEvents[] {
+	return events.map(event => 
+		match(event.eventType)
+			.with("JoinEvent", () => new JoinEvent(event.metadata.userName, event.metadata.userId))
+			.with("LeaveEvent", () => new LeaveEvent(event.metadata.userName, event.metadata.userId, event.payload.destroy))
+			.with("NewLayerEvent", () => new NewLayerEvent(event.payload.name))
+			.with("StartLineEvent", () => new StartLineEvent(event.metadata.userId, event.payload.x, event.payload.y, event.payload.color, event.payload.width))
+			.with("EndLineEvent", () => new EndLineEvent(event.metadata.userId, event.payload.x, event.payload.y, event.payload.color, event.payload.width))
+			.with("StartQuadrilateralEvent", () => new StartQuadrilateralEvent(event.metadata.userId, event.payload.x, event.payload.y, event.payload.color, event.payload.width))
+			.with("EndQuadrilateralEvent", () => new EndQuadrilateralEvent(event.metadata.userId, event.payload.x, event.payload.y, event.payload.color, event.payload.width))
+			.otherwise(() => {
+				throw new Error(`Unknown event type: ${event.eventType}`)
+			})
+	)
+}

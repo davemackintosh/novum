@@ -13,9 +13,11 @@ export class Drawable extends Component {
 
 export class DrawableStyles {
 	fill: string
+	thickness: number
 
-	constructor() {
-		this.fill = "#000000"
+	constructor(fill: string = "#000000", thickness: number = 4) {
+		this.fill = fill
+		this.thickness = thickness
 	}
 }
 
