@@ -1,10 +1,7 @@
-import { Component } from "../index"
+import { IComponent } from "$lib/ecs"
 
-export class Layer extends Component {
-	public readonly name: string
-
+export class LayerComponent extends IComponent {
 	constructor(name: string) {
-        super()
-        this.name = name
-    }
+		super(name)
+	}
 }

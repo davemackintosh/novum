@@ -1,7 +1,23 @@
-import { Aggregate, AggregateError } from "$lib/cqrs";
+import { Aggregate, AggregateError, type Metadata } from "$lib/cqrs";
 import { P, match } from "ts-pattern";
-import { type DrawingEvents, type ArtistCommands, JoinCommand, JoinEvent, LeaveCommand, LeaveEvent, DestroyArtistsArt, StartDrawingCommand, StartLineEvent, StartQuadrilateralEvent, EndDrawingCommand, EndLineEvent, EndQuadrilateralEvent, NewLayerCommand, NewLayerEvent } from "../../../types/commands-events";
-import { Line, Quadrilateral } from "../../ecs/components/drawings";
+import {
+	type DrawingEvents,
+	type ArtistCommands,
+	JoinCommand,
+	JoinEvent,
+	LeaveCommand,
+	LeaveEvent,
+	DestroyArtistsArt,
+	StartDrawingCommand,
+	StartLineEvent,
+	StartQuadrilateralEvent,
+	EndDrawingCommand,
+	EndLineEvent,
+	EndQuadrilateralEvent,
+	NewLayerCommand,
+	NewLayerEvent
+} from "$lib/types/commands-events";
+import { Line, Quadrilateral } from "$lib/ecs/components/drawings";
 import type { ECS } from "$lib/ecs";
 
 export class ArtistAggregator extends Aggregate<DrawingEvents, ArtistCommands> {
@@ -13,16 +29,16 @@ export class ArtistAggregator extends Aggregate<DrawingEvents, ArtistCommands> {
 		this.ecs = ecs
 	}
 
-	handle_command(aggregateId: string, command: ArtistCommands): DrawingEvents[] {
+	async handle_command(aggregateId: string, command: ArtistCommands, metadata: Metadata): Promise<DrawingEvents[]> {
 		console.info("handling command", aggregateId, command)
 		return match(command)
 			.with(P.instanceOf(JoinCommand), (command: JoinCommand) => {
 				return [
-					new JoinEvent(command.userName, command.userId)
+					new JoinEvent(command.userName)
 				]
 			})
 			.with(P.instanceOf(LeaveCommand), (command: LeaveCommand) => {
-				const events: DrawingEvents[] = [new LeaveEvent(command.userName, command.userId)]
+				const events: DrawingEvents[] = [new LeaveEvent(metadata.userName, command.userId)]
 
 				if (command.destroy) {
 					events.push(new DestroyArtistsArt(command.userId))
@@ -34,16 +50,18 @@ export class ArtistAggregator extends Aggregate<DrawingEvents, ArtistCommands> {
 				const drawingEntity = this.ecs.createEntity()
 				return match(command.type)
 					.with(P.instanceOf(Line), () => {
-						return [new StartLineEvent(command.userId, command.x, command.y, command.color, command.width)]
+						return [new StartLineEvent(command.point, command.style)]
 
 					})
 					.with(P.instanceOf(Quadrilateral), () => {
-						return [new StartQuadrilateralEvent(command.userId, command.x, command.y, command.color, command.width)]
+						return [new StartQuadrilateralEvent(command.point, command.style)]
 
 					})
 					.otherwise(() => {
 						throw new AggregateError("Unknown draw command: " + command)
 					})
+
+				this.ecs.addEntity(drawingEntity)
 			})
 			.with(P.instanceOf(NewLayerCommand), (command: NewLayerCommand) => {
 				return [new NewLayerEvent(command.name)]
@@ -51,11 +69,11 @@ export class ArtistAggregator extends Aggregate<DrawingEvents, ArtistCommands> {
 			.with(P.instanceOf(EndDrawingCommand), (command: EndDrawingCommand) => {
 				return match(command.type)
 					.with(P.instanceOf(Line), () => {
-						return [new EndLineEvent(command.userId, command.x, command.y, command.color, command.width)]
+						return [new EndLineEvent(command.point, command.style)]
 
 					})
 					.with(P.instanceOf(Quadrilateral), () => {
-						return [new EndQuadrilateralEvent(command.userId, command.x, command.y, command.color, command.width)]
+						return [new EndQuadrilateralEvent(command.point, command.style)]
 
 					})
 					.otherwise(() => {

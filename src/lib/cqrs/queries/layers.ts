@@ -3,16 +3,16 @@ import { Query } from "..";
 import { ProjectViewRepo } from "../view_repos/project";
 import { ProjectView } from "../views/project";
 import { layers, type DisplayableLayer } from "../../../stores/event-stream"
-import { Layer } from "$lib/ecs/components/layer";
+import { LayerComponent } from "$lib/ecs/components/layer";
 
 export class LayersQuery extends Query<ProjectView, ProjectViewRepo, DisplayableLayer[]> {
 	private readonly ecs: ECS
 
 	constructor(repo: ProjectViewRepo, ecs: ECS) {
 		super(repo)
-		
+
 		this.ecs = ecs
-    }
+	}
 
 	async query(query: Partial<ProjectView>): Promise<DisplayableLayer[]> {
 		const project = await this.viewRepository.load(query.name ?? "")
@@ -22,11 +22,11 @@ export class LayersQuery extends Query<ProjectView, ProjectViewRepo, Displayable
 
 		const layerResults = results.map((layer) => ({
 			id: layer.id,
-            name: (layer.components[0] as Layer).name!,
+			name: (layer.components[0] as LayerComponent).name!,
 		}))
-		
+
 		layers.set(layerResults)
 
 		return layerResults
-	} 
+	}
 }

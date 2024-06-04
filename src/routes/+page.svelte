@@ -1,16 +1,14 @@
 <script lang="ts">
 	import { CQRS } from "$lib/cqrs"
 	import { ArtistAggregator } from "$lib/cqrs/aggregates/artist"
-	import { ProjectView } from "$lib/cqrs/views/project"
-	import { ECS, Entity } from "$lib/ecs"
-	import { Layer } from "$lib/ecs/components/layer"
+	import { ECS } from "$lib/ecs"
+	import { LayerComponent } from "$lib/ecs/components/layer"
 	import { onMount } from "svelte"
-	import { P, Pattern, match } from "ts-pattern"
-	import { EndDrawingCommand, NewLayerCommand, StartDrawingCommand } from "../types/commands-events"
+	import { P, match } from "ts-pattern"
+	import { EndDrawingCommand, NewLayerCommand, StartDrawingCommand } from "$lib/types/commands-events"
 	import { ProjectViewRepo } from "$lib/cqrs/view_repos/project"
 	import {layers, type DisplayableLayer} from "../stores/event-stream"
 	import { LayersQuery } from "$lib/cqrs/queries/layers"
-	import { ProjectQuery } from "$lib/cqrs/queries/project"
 	import { DrawingSystem } from "$lib/ecs/systems/drawing"
 	import { DrawableStyles, Quadrilateral, Vector } from "$lib/ecs/components/drawings"
 
@@ -37,11 +35,11 @@
 	const layersQuery = new LayersQuery(viewRepo, ecs)
 	const cqrs = new CQRS(new ArtistAggregator(ecs), viewRepo)
 
-	$: style = new DrawableStyles()
+	$: style = new DrawableStyles(color, thickness)
 
 	async function createNewLayer() {
 		const entity = ecs.createEntity()
-        entity.addComponent(new Layer("new layer"))
+        entity.addComponent(new LayerComponent("new layer"))
 		ecs.addEntity(entity)
 
         await cqrs.dispatch(entity.id + "", new NewLayerCommand("new layer"))
@@ -63,8 +61,9 @@
 			new Quadrilateral(
 				new Vector(event.offsetX, event.offsetY),
 				new Vector(event.offsetX, event.offsetY),
-			)),
+			),style),
 			{
+				userId: "",
 				userName: layer.name,
 			})
 	}
@@ -82,6 +81,7 @@
 			)
 		),
 			{
+				userId: "",
 				userName: layer.name,
 			})
     }
@@ -123,8 +123,9 @@
 		</div>
 		<ol>
 			{#each $layers as entity}
-				<!-- svelte-ignore a11y-click-events-have-key-events -->
-				<li class:selected={layer?.id === entity.id} on:click={() => selectLayer(entity)}>{entity.name}</li>
+				<li class:selected={layer?.id === entity.id}>
+					<button on:click={() => selectLayer(entity)}>{entity.name}</button>
+				</li>
 			{/each}
 		</ol>
 	</aside>

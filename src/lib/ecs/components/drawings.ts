@@ -1,11 +1,11 @@
-import { Component } from "$lib/ecs"
+import { IComponent } from "$lib/ecs"
 
-export class Drawable extends Component {
+export class Drawable extends IComponent {
 	transformOrigin: Vector
 	styles: DrawableStyles
 
-	constructor() {
-		super()
+	constructor(name: string) {
+		super(name)
 		this.transformOrigin = new Vector(0, 0)
 		this.styles = new DrawableStyles()
 	}
@@ -38,7 +38,7 @@ export class Quadrilateral extends Drawable {
 	styles: DrawableStyles
 
 	constructor(start: Vector, end: Vector) {
-		super()
+		super("qudrilateral")
 		this.start = start
 		this.end = end
 		this.styles = new DrawableStyles()
@@ -51,7 +51,7 @@ export class Line extends Drawable {
 	styles: DrawableStyles
 
 	constructor(start: Vector, end: Vector) {
-		super()
+		super("line")
 		this.start = start
 		this.end = end
 		this.styles = new DrawableStyles()

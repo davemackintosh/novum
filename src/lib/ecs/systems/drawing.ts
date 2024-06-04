@@ -1,6 +1,6 @@
 import { P, match } from "ts-pattern";
-import { Component, Entity, System } from "../"
-import { Quadrilateral } from "../components/drawings";
+import { IComponent, Entity, System } from "$lib/ecs"
+import { Quadrilateral } from "$lib/ecs/components/drawings";
 
 export class DrawingSystem extends System {
 	private readonly context: CanvasRenderingContext2D | null = null
@@ -12,10 +12,10 @@ export class DrawingSystem extends System {
 			return
 		}
 
-        this.context = context
-    }
+		this.context = context
+	}
 
-	update(entity: Entity, component: Component): void {
+	update(entity: Entity, component: IComponent): void {
 		console.log("update", entity, component)
 		for (const component of entity.getComponents()) {
 			console.log(1)
@@ -27,7 +27,7 @@ export class DrawingSystem extends System {
 		}
 	}
 
-	accepts(component: Component): boolean {
+	accepts(component: IComponent): boolean {
 		return match(component)
 			.with(P.instanceOf(Quadrilateral), () => true)
 			.otherwise(() => false)
@@ -36,14 +36,14 @@ export class DrawingSystem extends System {
 	private drawQuadrilateral(quadrilateral: Quadrilateral): void {
 		if (!this.context) {
 			console.warn("No context provided to DrawingSystem")
-            return
+			return
 		}
 		this.context.strokeStyle = quadrilateral.styles.fill
 
 		this.context.beginPath()
-        this.context.moveTo(quadrilateral.start.x, quadrilateral.start.y)
-        this.context.lineTo(quadrilateral.end.x, quadrilateral.end.y)
-        this.context.closePath()
-        this.context.stroke()
+		this.context.moveTo(quadrilateral.start.x, quadrilateral.start.y)
+		this.context.lineTo(quadrilateral.end.x, quadrilateral.end.y)
+		this.context.closePath()
+		this.context.stroke()
 	}
 }
