@@ -1,7 +1,11 @@
-import { IComponent } from "$lib/ecs"
+import { IComponent } from "$lib/ecs/abstracts"
 
 export class LayerComponent extends IComponent {
-	constructor(name: string) {
-		super(name)
+	public name?: string
+
+	constructor(name: string = "new layer") {
+		super()
+
+		this.name = name
 	}
 }

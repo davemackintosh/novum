@@ -1,14 +1,16 @@
 import { writable } from "svelte/store"
+import type { DrawingEvents } from "$lib/types/commands-events"
 import type { PersistableEvent } from "$lib/cqrs"
-import type { DrawingEvents } from "../types/commands-events"
 
 // We wouldn't normally parse an event stream to our views in the frontend
 // but this is a demo/POC.
-export const eventStore = writable<PersistableEvent<DrawingEvents>[]>([])
+const eventStore = writable<PersistableEvent<DrawingEvents>[]>([])
 
-export interface DisplayableLayer {
-	id: number
+interface DisplayableLayer {
+	id: string
 	name: string
 }
-export const layers = writable<DisplayableLayer[]>([])
+const layers = writable<DisplayableLayer[]>([])
 
+export { eventStore, layers }
+export type { DisplayableLayer }

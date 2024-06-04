@@ -4,19 +4,20 @@
 // that gives us flexibility.
 // for the sake of brevity, we're just going to parse the event stream on the frontend
 // without any server-side processing.
-// This also begins the process of creating a CQRS type architecture which keeps all of 
+// This also begins the process of creating a CQRS type architecture which keeps all of
 // our code organised into verbs and nouns that means we have the flexibility to change our
 // read model any time we want without any historical data loss or architectural complexity.
 
-import type { PersistableEvent } from "$lib/cqrs"
 import { match } from "ts-pattern"
+import type { PersistableEvent } from "$lib/cqrs"
 import type { Drawable, Vector } from "$lib/ecs/components/drawings"
 import { DrawableStyles } from "$lib/ecs/components/drawings"
+import { createUUID } from "$lib/uuid"
 
 /// COMMANDS
 // Commands result in events that ultimately changes what anyone will and can see.
 
-export class JoinCommand {
+class JoinCommand {
 	userName: string
 
 	constructor(userName: string) {
@@ -24,7 +25,7 @@ export class JoinCommand {
 	}
 }
 
-export class LeaveCommand {
+class LeaveCommand {
 	userId: string
 	destroy?: boolean
 
@@ -34,7 +35,17 @@ export class LeaveCommand {
 	}
 }
 
-export class NewLayerCommand {
+class NewProjectCommand {
+	id: string
+	name: string
+
+	constructor(name: string, id: string) {
+		this.id = id
+		this.name = name
+	}
+}
+
+class NewLayerCommand {
 	name: string
 
 	constructor(name: string) {
@@ -42,11 +53,10 @@ export class NewLayerCommand {
 	}
 }
 
-export class DrawingCommandBase {
+class DrawingCommandBase {
 	point: Vector
 	type: Drawable
 	style: DrawableStyles
-
 
 	constructor(point: Vector, type: Drawable, styles: DrawableStyles = new DrawableStyles()) {
 		this.point = point
@@ -55,19 +65,24 @@ export class DrawingCommandBase {
 	}
 }
 
-export class StartDrawingCommand extends DrawingCommandBase {
+class StartDrawingCommand extends DrawingCommandBase {
 	constructor(point: Vector, type: Drawable, styles: DrawableStyles = new DrawableStyles()) {
 		super(point, type, styles)
 	}
 }
 
-export class EndDrawingCommand extends DrawingCommandBase {
+class EndDrawingCommand extends DrawingCommandBase {
 	constructor(point: Vector, type: Drawable, styles: DrawableStyles = new DrawableStyles()) {
 		super(point, type, styles)
 	}
 }
 
-export type ArtistCommands = JoinCommand | LeaveCommand | StartDrawingCommand | EndDrawingCommand | NewLayerCommand
+type ArtistCommands =
+	| JoinCommand
+	| LeaveCommand
+	| StartDrawingCommand
+	| EndDrawingCommand
+	| NewLayerCommand
 
 /// </COMMANDS
 
@@ -82,19 +97,18 @@ abstract class EventBase {
 	}
 }
 
-export class JoinEvent extends EventBase {
+class JoinEvent extends EventBase {
 	userName: string
 	userId: string
 
 	constructor(userName: string) {
 		super("1.0.0")
 		this.userName = userName
-		// generate a unique id for the user.
-		this.userId = Math.random().toString(36)
+		this.userId = createUUID()
 	}
 }
 
-export class LeaveEvent extends EventBase {
+class LeaveEvent extends EventBase {
 	userName: string
 	userId: string
 	destroy?: boolean
@@ -107,7 +121,18 @@ export class LeaveEvent extends EventBase {
 	}
 }
 
-export class NewLayerEvent extends EventBase {
+class NewProjectEvent extends EventBase {
+	name: string
+	id: string
+
+	constructor(name: string, id: string) {
+		super("1.0.0")
+		this.name = name
+		this.id = id
+	}
+}
+
+class NewLayerEvent extends EventBase {
 	name: string
 
 	constructor(name: string = "new layer") {
@@ -116,7 +141,7 @@ export class NewLayerEvent extends EventBase {
 	}
 }
 
-export class DestroyArtistsArt extends EventBase {
+class DestroyArtistsArt extends EventBase {
 	userId: string
 
 	constructor(userId: string) {
@@ -136,59 +161,108 @@ class DrawingEvent extends EventBase {
 	}
 }
 
-export class StartLineEvent extends DrawingEvent {
+class StartLineEvent extends DrawingEvent {
 	constructor(point: Vector, styles: DrawableStyles) {
 		super(point, styles)
 	}
 }
 
-export class EndLineEvent extends DrawingEvent {
+class EndLineEvent extends DrawingEvent {
 	constructor(point: Vector, styles: DrawableStyles) {
 		super(point, styles)
 	}
 }
 
-export class StartQuadrilateralEvent extends DrawingEvent {
+class StartQuadrilateralEvent extends DrawingEvent {
 	constructor(point: Vector, styles: DrawableStyles) {
 		super(point, styles)
 	}
 }
 
-export class EndQuadrilateralEvent extends DrawingEvent {
+class EndQuadrilateralEvent extends DrawingEvent {
 	constructor(point: Vector, styles: DrawableStyles) {
 		super(point, styles)
 	}
 }
 
-export type DrawingEvents = JoinEvent | LeaveEvent | StartLineEvent | EndLineEvent | DestroyArtistsArt | NewLayerEvent
+type DrawingEvents =
+	| JoinEvent
+	| LeaveEvent
+	| StartLineEvent
+	| EndLineEvent
+	| DestroyArtistsArt
+	| NewLayerEvent
+	| StartQuadrilateralEvent
+	| EndQuadrilateralEvent
+	| NewProjectEvent
 /// </EVENTS
 
 // There's a smarter way to get the actual type here, using type guards but for the sake of simplicity
 // I'll just cast to the event type based on the eventType property which is safe enough for now.
-export function persistableEventsToDrawingEvents(events: PersistableEvent<DrawingEvents>[]): DrawingEvents[] {
-	return events.map(event =>
+function persistableEventsToDrawingEvents(
+	events: PersistableEvent<DrawingEvents>[],
+): DrawingEvents[] {
+	return events.map((event) =>
 		match(event)
+			.with({ eventType: "NewProjectEvent" }, () => {
+				const pEvent = event as PersistableEvent<NewProjectEvent>
+				return new NewProjectEvent(pEvent.payload.name, pEvent.payload.id)
+			})
 			.with({ eventType: "JoinEvent" }, () => new JoinEvent(event.metadata.userName))
-			.with({ eventType: "LeaveEvent" }, () => new LeaveEvent(event.metadata.userName, event.metadata.userId, (event.payload as LeaveEvent).destroy))
-			.with({ eventType: "NewLayerEvent" }, () => new NewLayerEvent((event.payload as NewLayerEvent).name))
+			.with(
+				{ eventType: "LeaveEvent" },
+				() =>
+					new LeaveEvent(
+						event.metadata.userName,
+						event.metadata.userId,
+						(event.payload as LeaveEvent).destroy,
+					),
+			)
+			.with(
+				{ eventType: "NewLayerEvent" },
+				() => new NewLayerEvent((event.payload as NewLayerEvent).name),
+			)
 			.with({ eventType: "StartLineEvent" }, () => {
-				const pEvent = event as PersistableEvent<StartLineEvent>;
+				const pEvent = event as PersistableEvent<StartLineEvent>
 				return new StartLineEvent(pEvent.payload.point, pEvent.payload.styles)
 			})
 			.with({ eventType: "EndLineEvent" }, () => {
-				const pEvent = event as PersistableEvent<EndLineEvent>;
+				const pEvent = event as PersistableEvent<EndLineEvent>
 				return new EndLineEvent(pEvent.payload.point, pEvent.payload.styles)
 			})
 			.with({ eventType: "StartQuadrilateralEvent" }, () => {
-				const pEvent = event as PersistableEvent<EndLineEvent>;
+				const pEvent = event as PersistableEvent<EndLineEvent>
 				return new StartQuadrilateralEvent(pEvent.payload.point, pEvent.payload.styles)
 			})
 			.with({ eventType: "EndQuadrilateralEvent" }, () => {
-				const pEvent = event as PersistableEvent<EndLineEvent>;
+				const pEvent = event as PersistableEvent<EndLineEvent>
 				return new EndQuadrilateralEvent(pEvent.payload.point, pEvent.payload.styles)
 			})
 			.otherwise(() => {
 				throw new Error(`Unknown event type: ${event.eventType}`)
-			})
+			}),
 	)
+}
+
+export {
+	JoinCommand,
+	LeaveCommand,
+	NewLayerCommand,
+	JoinEvent,
+	LeaveEvent,
+	NewLayerEvent,
+	StartLineEvent,
+	EndLineEvent,
+	StartQuadrilateralEvent,
+	EndQuadrilateralEvent,
+	DrawingCommandBase,
+	StartDrawingCommand,
+	EndDrawingCommand,
+	type DrawingEvents,
+	type ArtistCommands,
+	persistableEventsToDrawingEvents,
+	DestroyArtistsArt,
+	DrawingEvent,
+	NewProjectCommand,
+	NewProjectEvent,
 }

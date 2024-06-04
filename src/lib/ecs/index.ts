@@ -1,50 +1,9 @@
-import type { PersistableEvent } from "$lib/cqrs"
-import type { DrawingEvents } from "$lib/types/commands-events"
+import type { IComponent, System } from "./abstracts"
+import { Entity } from "./entity"
 import { persistableEventsToEntities } from "./utils"
-
-export class Entity {
-	public readonly id: number
-	public readonly components: IComponent[]
-
-	constructor(id: number) {
-		this.id = id
-		this.components = []
-	}
-
-	getComponents(): IComponent[] {
-		return this.components
-	}
-
-	getComponent<T>(type: new (...args: unknown[]) => T): T | undefined {
-		return this.components.find(c => c instanceof type.constructor) as T | undefined
-	}
-
-	hasComponent<T>(component: new (...args: unknown[]) => T): boolean {
-		return this.components.some(c => c instanceof component.constructor)
-	}
-
-	addComponent(component: IComponent): void {
-		this.components.push(component)
-	}
-
-	removeComponent(component: IComponent): void {
-		this.components.splice(this.components.indexOf(component), 1)
-	}
-}
-
-export abstract class IComponent {
-	public readonly name: string
-
-	constructor(name: string) {
-		this.name = name
-	}
-}
-
-export abstract class System {
-	abstract update(entity: Entity, component: IComponent): void;
-
-	abstract accepts(subscription: IComponent): boolean
-}
+import type { DrawingEvents } from "$lib/types/commands-events"
+import type { PersistableEvent } from "$lib/cqrs"
+import { createUUID } from "$lib/uuid"
 
 // A basic ECS for drawing on a canvas across multiple users.
 export class ECS {
@@ -60,13 +19,12 @@ export class ECS {
 		this.registeredSystems.push(system)
 	}
 
-	createEntity(): Entity {
+	createEntity(aggregateId?: string): Entity {
+		const entityId = aggregateId || createUUID()
 		// In the real world, this would be problematic as entities are likely to be created in
-		// quick succession which would result in the same entity being created multiple times or 
+		// quick succession which would result in the same entity being created multiple times or
 		// consuming the same "id".
-		const entity = new Entity(this.entities.length + 1)
-
-		return entity
+		return new Entity(entityId)
 	}
 
 	addEntity(entity: Entity): void {
@@ -86,7 +44,9 @@ export class ECS {
 	}
 
 	async stateFromStorage(): Promise<void> {
-		const storedEvents: PersistableEvent<DrawingEvents>[] = JSON.parse(localStorage.getItem("events") || "[]")
+		const storedEvents: PersistableEvent<DrawingEvents>[] = JSON.parse(
+			localStorage.getItem("events") || "[]",
+		)
 		const newEntities = persistableEventsToEntities(storedEvents)
 
 		for (const newEntity of newEntities) {
@@ -101,8 +61,7 @@ export class ECS {
 			for (const system of this.registeredSystems) {
 				for (const component of entity.getComponents()) {
 					if (system.accepts(component)) {
-						console.log("update", entity, component, system)
-						system.update(entity, component)
+						system.update(entity)
 					}
 				}
 			}

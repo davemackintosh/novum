@@ -1,17 +1,17 @@
-import { IComponent } from "$lib/ecs"
+import { IComponent } from "$lib/ecs/abstracts"
 
-export class Drawable extends IComponent {
+class Drawable extends IComponent {
 	transformOrigin: Vector
 	styles: DrawableStyles
 
-	constructor(name: string) {
-		super(name)
+	constructor() {
+		super()
 		this.transformOrigin = new Vector(0, 0)
 		this.styles = new DrawableStyles()
 	}
 }
 
-export class DrawableStyles {
+class DrawableStyles {
 	fill: string
 	thickness: number
 
@@ -21,7 +21,7 @@ export class DrawableStyles {
 	}
 }
 
-export class Vector {
+class Vector {
 	x: number
 	y: number
 
@@ -32,30 +32,32 @@ export class Vector {
 }
 
 // We can draw quadrilaterals that start and end at some point with a fill.
-export class Quadrilateral extends Drawable {
-	start: Vector
-	end: Vector
+class Quadrilateral extends Drawable {
+	start?: Vector
+	end?: Vector
 	styles: DrawableStyles
 
-	constructor(start: Vector, end: Vector) {
-		super("qudrilateral")
+	constructor(start?: Vector, end?: Vector) {
+		super()
 		this.start = start
 		this.end = end
 		this.styles = new DrawableStyles()
 	}
 }
 
-export class Line extends Drawable {
+class Line extends Drawable {
 	start: Vector
 	end: Vector
 	styles: DrawableStyles
 
 	constructor(start: Vector, end: Vector) {
-		super("line")
+		super()
 		this.start = start
 		this.end = end
 		this.styles = new DrawableStyles()
 	}
 }
 
-export type Drawables = Quadrilateral | Line
+type Drawables = Quadrilateral | Line
+
+export { Drawable, DrawableStyles, Vector, Quadrilateral, Line, type Drawables }

@@ -6,6 +6,8 @@
 
 a proof of concept figma like collaborative drawing app using SvelteKit, Typescript and WebRTC.
 
+All work is done and stored in the frontend and there is no backend at all, all data is stored in localStorage. Events are dispatched over a webRTC channel and shared across devices.
+
 It approaches the problem using the following ideas:
 
 * ECS

@@ -1,11 +1,11 @@
 import type { ArtistCommands, DrawingEvents } from "$lib/types/commands-events"
 
-export interface Metadata {
+interface Metadata {
 	userId: string
 	userName: string
 }
 
-export interface PersistableEvent<T extends DrawingEvents> {
+interface PersistableEvent<T extends DrawingEvents> {
 	aggregateType: string
 	aggregateId: string
 	sequence: number
@@ -16,14 +16,14 @@ export interface PersistableEvent<T extends DrawingEvents> {
 	timestamp: number
 }
 
-export class AggregateError extends Error {
+class AggregateError extends Error {
 	constructor(message: string) {
 		super(message)
 		this.name = "AggregateError"
 	}
 }
 
-export abstract class Aggregate<Events extends DrawingEvents, Commands extends ArtistCommands> {
+abstract class Aggregate<Events extends DrawingEvents, Commands extends ArtistCommands> {
 	public readonly name: string
 	private readonly version: number
 
@@ -32,17 +32,21 @@ export abstract class Aggregate<Events extends DrawingEvents, Commands extends A
 		this.version = version
 	}
 
-	abstract handle_command(_aggregateId: string, _command: Commands, metadata?: Metadata): Promise<Events[]>;
+	abstract handle_command(
+		_aggregateId: string,
+		_command: Commands,
+		metadata?: Metadata,
+	): Promise<Events[]>
 }
 
-export abstract class View<Events extends DrawingEvents> {
-	abstract handle_event(_event: Events): View<Events>;
+abstract class View<Events extends DrawingEvents> {
+	abstract handle_event(_event: Events): View<Events>
 }
 
-export abstract class Query<
+abstract class Query<
 	V extends View<DrawingEvents>,
 	VR extends ViewRepository<DrawingEvents, V>,
-	Returns
+	Returns,
 > {
 	protected readonly viewRepository: VR
 
@@ -50,10 +54,10 @@ export abstract class Query<
 		this.viewRepository = viewRepository
 	}
 
-	abstract query(query: Partial<V>): Promise<Returns>;
+	abstract query(query: Partial<V>): Returns
 }
 
-export abstract class ViewRepository<Events extends DrawingEvents, V extends View<Events>> {
+abstract class ViewRepository<Events extends DrawingEvents, V extends View<Events>> {
 	private readonly name: string
 	protected readonly view: V
 
@@ -63,32 +67,29 @@ export abstract class ViewRepository<Events extends DrawingEvents, V extends Vie
 	}
 
 	// Commit a view to storage.
-	abstract commit(): Promise<void>;
+	abstract commit(): Promise<void>
 
-	abstract handle_event(event: Events): Promise<void>;
-	abstract load(aggregateId: string): Promise<V>;
+	abstract handle_event(event: Events): Promise<void>
+	abstract load(aggregateId: string): V
 }
 
-export class EventRepository {
+class EventRepository {
 	async commit(events: PersistableEvent<DrawingEvents>[]): Promise<void> {
 		// In the real world, we would commit these events to a database.
 		console.info("Committing events", events)
 
 		const existingEvents = JSON.parse(localStorage.getItem("events") || "[]")
 
-		localStorage.setItem("events", JSON.stringify([
-			...existingEvents,
-			...events,
-		]))
+		localStorage.setItem("events", JSON.stringify([...existingEvents, ...events]))
 
 		return Promise.resolve()
 	}
 }
 
-export class CQRS<A extends Aggregate<Events, ArtistCommands>, Events extends DrawingEvents> {
+class CQRS<A extends Aggregate<Events, ArtistCommands>, Events extends DrawingEvents> {
 	private readonly aggregate: A
-	private readonly eventRepository: EventRepository;
-	private readonly viewRepository: ViewRepository<Events, View<Events>>;
+	private readonly eventRepository: EventRepository
+	private readonly viewRepository: ViewRepository<Events, View<Events>>
 
 	constructor(aggregate: A, viewRepository: ViewRepository<Events, View<Events>>) {
 		this.aggregate = aggregate
@@ -97,7 +98,11 @@ export class CQRS<A extends Aggregate<Events, ArtistCommands>, Events extends Dr
 	}
 
 	// Handle a command.
-	async dispatchWithMetadata(aggregateId: string, command: ArtistCommands, metadata: Metadata): Promise<Events[]> {
+	async dispatchWithMetadata(
+		aggregateId: string,
+		command: ArtistCommands,
+		metadata: Metadata,
+	): Promise<Events[]> {
 		const events = await this.aggregate.handle_command(aggregateId, command, metadata)
 		let currentSequence = JSON.parse(localStorage.getItem("events") || "[]").length
 		const persistableEvents: PersistableEvent<DrawingEvents>[] = events.map((event) => ({
@@ -108,7 +113,7 @@ export class CQRS<A extends Aggregate<Events, ArtistCommands>, Events extends Dr
 			eventVersion: event.version,
 			payload: event,
 			metadata: metadata,
-			timestamp: Date.now()
+			timestamp: Date.now(),
 		}))
 
 		await this.eventRepository.commit(persistableEvents)
@@ -130,4 +135,17 @@ export class CQRS<A extends Aggregate<Events, ArtistCommands>, Events extends Dr
 			userName: "",
 		})
 	}
+}
+
+export {
+	AggregateError,
+	Aggregate,
+	View,
+	Query,
+	ViewRepository,
+	CQRS,
+	EventRepository,
+	type PersistableEvent,
+	type Metadata,
+	type DrawingEvents,
 }

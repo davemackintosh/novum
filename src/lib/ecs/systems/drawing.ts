@@ -1,6 +1,7 @@
-import { P, match } from "ts-pattern";
-import { IComponent, Entity, System } from "$lib/ecs"
-import { Quadrilateral } from "$lib/ecs/components/drawings";
+import { P, match } from "ts-pattern"
+import { IComponent, System } from "../abstracts"
+import { QuadrilateralComponent } from "../components/quadrilateral"
+import { Entity } from "$lib/ecs/entity"
 
 export class DrawingSystem extends System {
 	private readonly context: CanvasRenderingContext2D | null = null
@@ -15,12 +16,10 @@ export class DrawingSystem extends System {
 		this.context = context
 	}
 
-	update(entity: Entity, component: IComponent): void {
-		console.log("update", entity, component)
+	update(entity: Entity): void {
 		for (const component of entity.getComponents()) {
-			console.log(1)
 			match(component)
-				.with(P.instanceOf(Quadrilateral), this.drawQuadrilateral)
+				.with(P.instanceOf(QuadrilateralComponent), (quad) => this.drawQuadrilateral(quad))
 				.otherwise(() => {
 					console.warn("Unknown component type", component)
 				})
@@ -29,21 +28,28 @@ export class DrawingSystem extends System {
 
 	accepts(component: IComponent): boolean {
 		return match(component)
-			.with({ name: "Quadrilateral" }, () => true)
+			.with(P.instanceOf(QuadrilateralComponent), () => true)
 			.otherwise(() => false)
 	}
 
-	private drawQuadrilateral(quadrilateral: Quadrilateral): void {
+	private drawQuadrilateral(quadrilateral: QuadrilateralComponent): void {
 		if (!this.context) {
 			console.warn("No context provided to DrawingSystem")
 			return
 		}
+		if (!quadrilateral.start || !quadrilateral.end) {
+			return
+		}
+
 		this.context.strokeStyle = quadrilateral.styles.fill
 
 		this.context.beginPath()
-		this.context.moveTo(quadrilateral.start.x, quadrilateral.start.y)
-		this.context.lineTo(quadrilateral.end.x, quadrilateral.end.y)
-		this.context.closePath()
+		this.context.rect(
+			quadrilateral.start.x,
+			quadrilateral.start.y,
+			quadrilateral.end.x,
+			quadrilateral.end.y,
+		)
 		this.context.stroke()
 	}
 }
