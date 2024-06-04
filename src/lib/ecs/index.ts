@@ -1,7 +1,6 @@
 import type { PersistableEvent } from "$lib/cqrs"
-import { match } from "ts-pattern"
-import { LayerComponent } from "$lib/ecs/components/layer"
-import type { DrawingEvents, NewLayerEvent } from "$lib/types/commands-events"
+import type { DrawingEvents } from "$lib/types/commands-events"
+import { persistableEventsToEntities } from "./utils"
 
 export class Entity {
 	public readonly id: number
@@ -88,46 +87,25 @@ export class ECS {
 
 	async stateFromStorage(): Promise<void> {
 		const storedEvents: PersistableEvent<DrawingEvents>[] = JSON.parse(localStorage.getItem("events") || "[]")
-		const newEntities = this.persistableEventsToEntities(storedEvents)
+		const newEntities = persistableEventsToEntities(storedEvents)
 
 		for (const newEntity of newEntities) {
 			this.addEntity(newEntity)
 		}
 
-		console.log("applied ecs state from project view", this)
+		console.log("applied ecs state from project view", this.entities)
 	}
 
 	update(): void {
-		// Update all systems based on their component subscriptions.
 		for (const entity of this.entities) {
 			for (const system of this.registeredSystems) {
 				for (const component of entity.getComponents()) {
 					if (system.accepts(component)) {
+						console.log("update", entity, component, system)
 						system.update(entity, component)
 					}
 				}
 			}
 		}
-	}
-
-	persistableEventsToEntities(events: PersistableEvent<DrawingEvents>[]): Entity[] {
-		const entities: Entity[] = events.map(event => {
-			const entity = this.createEntity()
-
-			match(event)
-				.with({ eventType: "NewLayerEvent" }, () => {
-					const component = new LayerComponent((event.payload as NewLayerEvent).name)
-					entity.addComponent(component)
-				})
-				.with({ eventType: "StartLineEvent" }, () => {
-				})
-				.otherwise(() => {
-					throw new Error(`Unknown event type: ${event.eventType}`)
-				})
-
-			return entity
-		})
-
-		return entities
 	}
 }

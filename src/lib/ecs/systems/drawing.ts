@@ -29,7 +29,7 @@ export class DrawingSystem extends System {
 
 	accepts(component: IComponent): boolean {
 		return match(component)
-			.with(P.instanceOf(Quadrilateral), () => true)
+			.with({ name: "Quadrilateral" }, () => true)
 			.otherwise(() => false)
 	}
 

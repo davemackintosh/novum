@@ -2,7 +2,7 @@
 	import { CQRS } from "$lib/cqrs"
 	import { ArtistAggregator } from "$lib/cqrs/aggregates/artist"
 	import { ECS } from "$lib/ecs"
-	import { LayerComponent } from "$lib/ecs/components/layer"
+	//import { LayerComponent } from "$lib/ecs/components/layer"
 	import { onMount } from "svelte"
 	import { P, match } from "ts-pattern"
 	import { EndDrawingCommand, NewLayerCommand, StartDrawingCommand } from "$lib/types/commands-events"
@@ -39,7 +39,7 @@
 
 	async function createNewLayer() {
 		const entity = ecs.createEntity()
-        entity.addComponent(new LayerComponent("new layer"))
+        //entity.addComponent(new LayerComponent("new layer"))
 		ecs.addEntity(entity)
 
         await cqrs.dispatch(entity.id + "", new NewLayerCommand("new layer"))
@@ -63,7 +63,7 @@
 				new Vector(event.offsetX, event.offsetY),
 			),style),
 			{
-				userId: "",
+				userId: "", // We'll get this from the store later.
 				userName: layer.name,
 			})
 	}
@@ -81,7 +81,7 @@
 			)
 		),
 			{
-				userId: "",
+				userId: "", // We'll get this from the store later.
 				userName: layer.name,
 			})
     }
@@ -94,7 +94,6 @@
 	}
 
 	onMount(async () => {
-		await layersQuery.query({})
 		await ecs.stateFromStorage()
 	
 		if (!canvas) {
@@ -121,7 +120,7 @@
 		<div class="toolbox">
 			<button on:click={createNewLayer}>Create new layer</button>
 		</div>
-		<ol>
+		<ol class="layers">
 			{#each $layers as entity}
 				<li class:selected={layer?.id === entity.id}>
 					<button on:click={() => selectLayer(entity)}>{entity.name}</button>
@@ -174,5 +173,16 @@
 
 	li.selected {
 		font-weight: bold;
+	}
+
+	.layers button {
+		appearance: none;
+		font-weight: inherit;
+		border: 0;
+		background: none;
+	}
+
+	.layers button:hover {
+		cursor: pointer;
 	}
 </style>
