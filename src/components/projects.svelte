@@ -6,18 +6,20 @@
 	import { createUUID } from "$lib/uuid"
 	import { NewProjectCommand } from "$lib/types/commands-events"
 
+	let projectName = ""
 	export let projects: ProjectView[]
 	export let cqrsInstance: CQRS<ArtistAggregator, DrawingEvents>
 
 	function newProject() {
 		const aggregateId = createUUID()
-		cqrsInstance.dispatch(aggregateId, new NewProjectCommand("new project", aggregateId))
+		cqrsInstance.dispatch(aggregateId, new NewProjectCommand(projectName, aggregateId))
 	}
 </script>
 
 {#each projects as project}
-	<ProjectCard {project} on:click />
+	<ProjectCard {project} />
 {/each}
 <div class="text-center">
-	<button on:click={newProject}>New project</button>
+	<input bind:value={projectName} type="text" autocapitalize="" spellcheck />
+	<button on:click={newProject} disabled={projectName.length === 0}>New project</button>
 </div>

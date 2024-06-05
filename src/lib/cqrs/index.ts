@@ -70,7 +70,7 @@ abstract class ViewRepository<Events extends DrawingEvents, V extends View<Event
 	abstract commit(): Promise<void>
 
 	abstract handle_event(event: Events): Promise<void>
-	abstract load(aggregateId: string): V
+	abstract load(aggregateId: string): V | V[]
 }
 
 class EventRepository {

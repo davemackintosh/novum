@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { onMount } from "svelte"
 	import { P, match } from "ts-pattern"
-	import { layers, type DisplayableLayer } from "../stores/event-stream"
+	import { currentProject, projects } from "../stores/project"
 	import Projects from "../components/projects.svelte"
+	import type { DisplayableLayer } from "../stores/event-stream"
 	import { CQRS } from "$lib/cqrs"
 	import { ArtistAggregator } from "$lib/cqrs/aggregates/artist"
 	import { ECS } from "$lib/ecs"
@@ -14,18 +15,15 @@
 	import { ProjectViewRepo } from "$lib/cqrs/view_repos/project"
 	import { DrawingSystem } from "$lib/ecs/systems/drawing"
 	import { DrawableStyles, Quadrilateral, Vector } from "$lib/ecs/components/drawings"
-	import type { ProjectView } from "$lib/cqrs/views/project"
-	import { ProjectQuery } from "$lib/cqrs/queries/project"
+	import { createUUID } from "$lib/uuid"
 
-	let name = "Novum"
+	let userAddress = createUUID()
 	let canvas: HTMLCanvasElement | null
 	let error: string | null = null
 	let color: string = "#000000"
 	let thickness: number = 1
-	let layer: DisplayableLayer | null = null
+	let currentLayer: DisplayableLayer | null = null
 	let render: boolean = true
-	let projectId: string = ""
-	let projects: ProjectView[] = []
 
 	// In the real world, an ECS solves a data locality problem,
 	// the CPU cache is much faster than the memory access so we
@@ -39,57 +37,61 @@
 	// which for designers, is very useful/important.
 	const ecs = new ECS()
 	const viewRepo = new ProjectViewRepo()
-	const projectQuery = new ProjectQuery(viewRepo)
 	const cqrs = new CQRS(new ArtistAggregator(), viewRepo)
 
 	$: style = new DrawableStyles(color, thickness)
 
-	async function loadProject(project: ProjectView) {
-		projectId = project.id!
-	}
-
 	async function createNewLayer() {
-		await cqrs.dispatch(projectId, new NewLayerCommand("new layer"))
+		if (!$currentProject) {
+			throw new ReferenceError("no current project")
+		}
+		await cqrs.dispatch($currentProject.id!, new NewLayerCommand("new layer"))
 		viewRepo.load()
 	}
 
 	function selectLayer(selectedLayerentity: DisplayableLayer) {
-		layer = selectedLayerentity
+		currentLayer = selectedLayerentity
 	}
 
 	async function beginDrawing(event: MouseEvent) {
-		if (!layer) {
+		if (!$currentProject) {
+			throw new ReferenceError("no current project")
+		}
+		if (!currentLayer) {
 			console.warn("Layer not selected")
 			return
 		}
 		cqrs.dispatchWithMetadata(
-			projectId,
+			$currentProject.id!,
 			new StartDrawingCommand(
 				new Vector(event.offsetX, event.offsetY),
 				new Quadrilateral(new Vector(event.offsetX, event.offsetY), undefined),
 				style,
 			),
 			{
-				userId: "", // We'll get this from the store later.
-				userName: layer.name,
+				userId: userAddress,
+				userName: "",
 			},
 		)
 	}
 
 	async function endDrawing(event: MouseEvent) {
-		if (!layer) {
+		if (!$currentProject) {
+			throw new ReferenceError("no current project")
+		}
+		if (!currentLayer) {
 			console.warn("Layer not selected")
 			return
 		}
 		cqrs.dispatchWithMetadata(
-			projectId,
+			$currentProject.id!,
 			new EndDrawingCommand(
 				new Vector(event.offsetX, event.offsetY),
 				new Quadrilateral(undefined, new Vector(event.offsetX, event.offsetY)),
 			),
 			{
-				userId: "", // We'll get this from the store later.
-				userName: layer.name,
+				userId: userAddress,
+				userName: "",
 			},
 		)
 	}
@@ -104,10 +106,8 @@
 	onMount(async () => {
 		await ecs.stateFromStorage()
 		viewRepo.load()
-		projects = projectQuery.query()
-		console.log("PROJECTS", projects)
 
-		if (projectId && !canvas) {
+		if ($currentProject?.id && !canvas) {
 			error = "Could not find canvas element"
 			return
 		}
@@ -127,26 +127,36 @@
 
 <div class="app">
 	<aside>
-		<input bind:value={name} type="text" name="name" placeholder="Enter a username" />
-		<div class="toolbox">
-			<button on:click={createNewLayer}>Create new layer</button>
-		</div>
-		<ol class="layers">
-			{#each $layers as entity}
-				<li class:selected={layer?.id === entity.id}>
-					<button on:click={() => selectLayer(entity)}>{entity.name}</button>
-				</li>
-			{/each}
-		</ol>
+		<p>
+			{userAddress}
+			<small>
+				Save this somewhere safe, this is your unique Novum address. Lose this and you lose all your
+				work and invites.
+			</small>
+		</p>
+		{#if $currentProject}
+			<div class="project-meta">
+				<p><strong>{$currentProject?.name}</strong></p>
+				<div class="toolbox">
+					<button on:click={createNewLayer} disabled={!$currentProject}>Create new layer</button>
+				</div>
+			</div>
+			<ol class="layers">
+				{#each $currentProject.layers as layer}
+					<li class:selected={layer?.id === layer.id}>
+						<button on:click={() => selectLayer(layer)}>{layer.name}</button>
+					</li>
+				{/each}
+			</ol>
+		{/if}
 	</aside>
 	<main>
 		{#if error}
 			<p>{error}</p>
-		{:else if !projectId}
-			<Projects {projects} cqrsInstance={cqrs} on:click={loadProject} />
+		{:else if !$currentProject?.id}
+			<Projects projects={$projects} cqrsInstance={cqrs} />
 		{:else}
-			<canvas id="canvas" bind:this={canvas} on:mousedown={beginDrawing} on:mouseup={endDrawing}
-			></canvas>
+			<canvas id="canvas" bind:this={canvas} on:mousedown={beginDrawing} on:mouseup={endDrawing} />
 		{/if}
 	</main>
 </div>
@@ -162,6 +172,7 @@
 		flex: 1;
 		flex-grow: 0;
 		border-right: 1px solid black;
+		padding: 1em;
 	}
 
 	main {
@@ -169,10 +180,6 @@
 		flex-grow: 1;
 		flex-shrink: 1;
 		flex-basis: 100%;
-	}
-
-	input {
-		padding: 1rem;
 	}
 
 	canvas {

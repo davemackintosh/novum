@@ -34,6 +34,11 @@ export default [
 			parserOptions: {
 				parser: ts.parser
 			}
+		},
+		rules: {
+			'import/order': 'error',
+			'import/group-exports': 'off',
+			'import/exports-last': 'off',
 		}
 	},
 	{
