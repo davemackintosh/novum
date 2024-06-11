@@ -64,9 +64,9 @@ class EventRepository {
 		// In the real world, we would commit these events to a database.
 		console.info("Committing events", events)
 
-		await dbInstance.events.bulkInsert(events)
+		const res = await dbInstance.events.bulkInsert(events)
 
-		return void 0
+		console.log(res)
 	}
 }
 

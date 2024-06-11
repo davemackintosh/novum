@@ -5,7 +5,7 @@
 	import { userAddress } from "../stores/user"
 	import Projects from "../components/projects.svelte"
 	import { CQRS } from "$lib/cqrs"
-	import { ArtistAggregator } from "$lib/cqrs/aggregates/artist"
+	import { ArtistAggregator } from "$lib/cqrs/aggregates/project"
 	import { ECS } from "$lib/ecs"
 	import {
 		EndDrawingCommand,

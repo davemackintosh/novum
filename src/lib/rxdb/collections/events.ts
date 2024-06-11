@@ -48,7 +48,7 @@ const Events: RxJsonSchema<PersistableEvent<DrawingEvents>> = {
 			type: "object",
 		},
 		timestamp: {
-			type: "string",
+			type: "integer",
 		},
 	},
 } as const

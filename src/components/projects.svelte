@@ -2,7 +2,7 @@
 	import ProjectCard from "./project-card.svelte"
 	import type { ProjectView } from "$lib/cqrs/views/project"
 	import type { CQRS, DrawingEvents } from "$lib/cqrs"
-	import type { ArtistAggregator } from "$lib/cqrs/aggregates/artist"
+	import type { ArtistAggregator } from "$lib/cqrs/aggregates/project"
 	import { NewProjectCommand } from "$lib/types/commands-events"
 
 	let projectName = ""
