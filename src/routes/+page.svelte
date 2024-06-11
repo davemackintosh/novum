@@ -69,8 +69,7 @@
 				style,
 			),
 			{
-				userId: $userAddress,
-				userName: "",
+				userAddress: $userAddress,
 			},
 		)
 	}
@@ -92,8 +91,7 @@
 				style,
 			),
 			{
-				userId: $userAddress,
-				userName: "",
+				userAddress: $userAddress,
 			},
 		)
 	}

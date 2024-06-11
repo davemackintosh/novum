@@ -58,7 +58,12 @@ class DrawingCommandBase {
 	style: DrawableStyles
 	layer: NewLayerEvent
 
-	constructor(point: Vector, type: Drawable, layer: NewLayerEvent, styles: DrawableStyles = new DrawableStyles()) {
+	constructor(
+		point: Vector,
+		type: Drawable,
+		layer: NewLayerEvent,
+		styles: DrawableStyles = new DrawableStyles(),
+	) {
 		this.point = point
 		this.type = type
 		this.style = styles
@@ -67,13 +72,23 @@ class DrawingCommandBase {
 }
 
 class StartDrawingCommand extends DrawingCommandBase {
-	constructor(point: Vector, type: Drawable, layer: NewLayerEvent, styles: DrawableStyles = new DrawableStyles()) {
+	constructor(
+		point: Vector,
+		type: Drawable,
+		layer: NewLayerEvent,
+		styles: DrawableStyles = new DrawableStyles(),
+	) {
 		super(point, type, layer, styles)
 	}
 }
 
 class EndDrawingCommand extends DrawingCommandBase {
-	constructor(point: Vector, type: Drawable, layer: NewLayerEvent, styles: DrawableStyles = new DrawableStyles()) {
+	constructor(
+		point: Vector,
+		type: Drawable,
+		layer: NewLayerEvent,
+		styles: DrawableStyles = new DrawableStyles(),
+	) {
 		super(point, type, layer, styles)
 	}
 }
@@ -203,13 +218,7 @@ function persistableEventToDrawingEvents(event: PersistableEvent<DrawingEvents>)
 			return new NewProjectEvent(pEvent.payload.name, pEvent.payload.id)
 		})
 		.with({ eventType: "JoinEvent" }, () => new JoinEvent(event.metadata.userAddress))
-		.with(
-			{ eventType: "LeaveEvent" },
-			() =>
-				new LeaveEvent(
-					event.metadata.userAddress,
-				),
-		)
+		.with({ eventType: "LeaveEvent" }, () => new LeaveEvent(event.metadata.userAddress))
 		.with(
 			{ eventType: "NewLayerEvent" },
 			() => new NewLayerEvent((event.payload as NewLayerEvent).name),

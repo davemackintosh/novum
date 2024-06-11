@@ -1,12 +1,11 @@
-import { type RxCollection, type RxJsonSchema } from "rxdb";
-import type { DrawingEvents } from "$lib/types/commands-events";
+import { type RxCollection, type RxJsonSchema } from "rxdb"
+import type { DrawingEvents } from "$lib/types/commands-events"
 
 interface Metadata {
 	userAddress: string
 }
 
 interface PersistableEvent<T extends DrawingEvents> {
-	internalId: string
 	aggregateType: string
 	aggregateId: string
 	sequence: number
@@ -21,35 +20,26 @@ const Events: RxJsonSchema<PersistableEvent<DrawingEvents>> = {
 	version: 0,
 	title: "events",
 	description: "The event source events that make up this instance of Novum.",
-	primaryKey: "internalId",
+	primaryKey: "aggregateId",
 	type: "object",
 	keyCompression: true,
-	required: [
-		"aggregateId",
-		"aggregateType",
-		"sequence",
-		"payload",
-		"eventType"
-	],
+	required: ["aggregateId", "aggregateType", "sequence", "payload", "eventType"],
 	properties: {
-		internalId: {
-			type: "string",
-			maxLength: 50,
-		},
 		aggregateId: {
 			type: "string",
+			maxLength: 40,
 		},
 		aggregateType: {
-			type: 'string'
+			type: "string",
 		},
 		sequence: {
 			type: "integer",
 		},
 		eventType: {
-			type: 'string'
+			type: "string",
 		},
 		eventVersion: {
-			type: 'string'
+			type: "string",
 		},
 		payload: {
 			type: "object",
@@ -58,16 +48,11 @@ const Events: RxJsonSchema<PersistableEvent<DrawingEvents>> = {
 			type: "object",
 		},
 		timestamp: {
-			type: 'string'
-		}
-	}
+			type: "string",
+		},
+	},
 } as const
 
 type EventsCollection = RxCollection<PersistableEvent<DrawingEvents>>
 
-export {
-	Events,
-	type PersistableEvent,
-	type Metadata,
-	type EventsCollection,
-}
+export { Events, type PersistableEvent, type Metadata, type EventsCollection }

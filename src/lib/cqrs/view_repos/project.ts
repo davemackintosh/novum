@@ -12,12 +12,15 @@ export class ProjectViewRepo extends ViewRepository<DrawingEvents, ProjectView> 
 
 	async commit(): Promise<void> {
 		console.info("Committing this project to storage", this.view)
-		console.log("UPSERT", await dbInstance.projects.upsert({
-			id: this.view.id,
-			name: this.view.name,
-			layers: this.view.layers,
-			members: this.view.members
-		}))
+		console.log(
+			"UPSERT",
+			await dbInstance.projects.upsert({
+				id: this.view.id,
+				name: this.view.name,
+				layers: this.view.layers,
+				members: this.view.members,
+			}),
+		)
 	}
 
 	async handle_event(event: DrawingEvents) {
@@ -41,7 +44,6 @@ export class ProjectViewRepo extends ViewRepository<DrawingEvents, ProjectView> 
 			} else {
 				projectViews.get(event.aggregateId)!.handle_event(drawingEvent)
 			}
-
 		}
 
 		const projectsArray = Array.from(projectViews.values())

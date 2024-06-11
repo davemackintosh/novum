@@ -9,7 +9,6 @@ import type {
 	StartQuadrilateralEvent,
 } from "$lib/types/commands-events"
 
-
 export function persistableEventsToEntities(events: PersistableEvent<DrawingEvents>[]): Entity[] {
 	const entities: Entity[] = events.map((event) => {
 		const entity = new Entity(event.aggregateId)
@@ -47,4 +46,3 @@ export function persistableEventsToEntities(events: PersistableEvent<DrawingEven
 
 	return entities
 }
-

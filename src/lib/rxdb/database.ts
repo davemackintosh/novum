@@ -1,15 +1,15 @@
-import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv'
-import { wrappedKeyCompressionStorage } from 'rxdb/plugins/key-compression'
-import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js'
-import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election'
-import { addRxPlugin, createRxDatabase, type RxDatabase } from 'rxdb'
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie'
-import { Events, type EventsCollection } from './collections/events'
-import { Projects, type ProjectsCollection } from './collections/projects'
-import { browser } from '$app/environment'
+import { wrappedValidateAjvStorage } from "rxdb/plugins/validate-ajv"
+import { wrappedKeyCompressionStorage } from "rxdb/plugins/key-compression"
+import { wrappedKeyEncryptionCryptoJsStorage } from "rxdb/plugins/encryption-crypto-js"
+import { RxDBLeaderElectionPlugin } from "rxdb/plugins/leader-election"
+import { addRxPlugin, createRxDatabase, type RxDatabase } from "rxdb"
+import { getRxStorageDexie } from "rxdb/plugins/storage-dexie"
+import { Events, type EventsCollection } from "./collections/events"
+import { Projects, type ProjectsCollection } from "./collections/projects"
+import { browser } from "$app/environment"
 
 type DatabaseType = {
-	events: EventsCollection,
+	events: EventsCollection
 	projects: ProjectsCollection
 }
 
@@ -20,8 +20,8 @@ async function getDatabase(): Promise<RxDatabase<DatabaseType>> {
 	// @ts-expect-error Don't do anything in SSR.
 	if (!browser) return null
 
-	if (process.env.NODE_ENV !== 'production') {
-		const { RxDBDevModePlugin, disableWarnings } = await import('rxdb/plugins/dev-mode')
+	if (process.env.NODE_ENV !== "production") {
+		const { RxDBDevModePlugin, disableWarnings } = await import("rxdb/plugins/dev-mode")
 		disableWarnings()
 		addRxPlugin(RxDBDevModePlugin)
 	}
@@ -29,15 +29,15 @@ async function getDatabase(): Promise<RxDatabase<DatabaseType>> {
 	addRxPlugin(RxDBLeaderElectionPlugin)
 
 	const db = await createRxDatabase<DatabaseType>({
-		name: 'novum',
+		name: "novum",
 		ignoreDuplicate: true,
 		storage: wrappedValidateAjvStorage({
 			storage: wrappedKeyCompressionStorage({
 				storage: wrappedKeyEncryptionCryptoJsStorage({
-					storage: getRxStorageDexie()
-				})
-			})
-		})
+					storage: getRxStorageDexie(),
+				}),
+			}),
+		}),
 	})
 
 	await db.addCollections({
@@ -45,8 +45,8 @@ async function getDatabase(): Promise<RxDatabase<DatabaseType>> {
 			schema: Events,
 		},
 		projects: {
-			schema: Projects
-		}
+			schema: Projects,
+		},
 	})
 
 	await db.waitForLeadership()
@@ -56,7 +56,4 @@ async function getDatabase(): Promise<RxDatabase<DatabaseType>> {
 
 const dbInstance: RxDatabase<DatabaseType> = await getDatabase()
 
-export {
-	getDatabase,
-	dbInstance,
-}
+export { getDatabase, dbInstance }

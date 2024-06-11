@@ -10,12 +10,7 @@ const Projects: RxJsonSchema<PersistableProject> = {
 	primaryKey: "id",
 	type: "object",
 	keyCompression: true,
-	required: [
-		"id",
-		"name",
-		"layers",
-		"members"
-	],
+	required: ["id", "name", "layers", "members"],
 	properties: {
 		name: {
 			type: "string",
@@ -28,7 +23,7 @@ const Projects: RxJsonSchema<PersistableProject> = {
 			type: "array",
 			items: {
 				type: "object",
-			}
+			},
 		},
 		members: {
 			type: "array",
@@ -36,13 +31,9 @@ const Projects: RxJsonSchema<PersistableProject> = {
 				type: "string",
 			},
 		},
-	}
+	},
 } as const
 
 type ProjectsCollection = RxCollection<PersistableProject>
 
-export {
-	Projects,
-	type ProjectsCollection
-}
-
+export { Projects, type ProjectsCollection }

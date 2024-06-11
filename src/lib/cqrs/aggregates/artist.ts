@@ -38,7 +38,7 @@ export class ArtistAggregator extends Aggregate<DrawingEvents, ArtistCommands> {
 				return [new JoinEvent(command.userName)]
 			})
 			.with(P.instanceOf(LeaveCommand), (command: LeaveCommand) => {
-				const events: DrawingEvents[] = [new LeaveEvent(metadata.userName, command.userId)]
+				const events: DrawingEvents[] = [new LeaveEvent(metadata.userAddress)]
 
 				if (command.destroy) {
 					events.push(new DestroyArtistsArt(command.userId))
