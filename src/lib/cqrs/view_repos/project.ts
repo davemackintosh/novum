@@ -1,6 +1,6 @@
 import { ViewRepository, type PersistableEvent } from ".."
 import { ProjectView } from "../views/project"
-import { projects } from "../../../stores/project"
+import { projects } from "$lib/stores/project"
 import { persistableEventToDrawingEvents, type DrawingEvents } from "$lib/types/commands-events"
 import { dbInstance } from "$lib/rxdb/database"
 
@@ -12,15 +12,14 @@ export class ProjectViewRepo extends ViewRepository<DrawingEvents, ProjectView> 
 
 	async commit(): Promise<void> {
 		console.info("Committing this project to storage", this.view)
-		console.log(
-			"UPSERT",
-			await dbInstance.projects.upsert({
-				id: this.view.id,
-				name: this.view.name,
-				layers: this.view.layers,
-				members: this.view.members,
-			}),
-		)
+		const res = await dbInstance.projects.upsert({
+			id: this.view.id,
+			name: this.view.name,
+			layers: this.view.layers,
+			members: this.view.members,
+		})
+
+		console.log(res)
 	}
 
 	async handle_event(event: DrawingEvents) {

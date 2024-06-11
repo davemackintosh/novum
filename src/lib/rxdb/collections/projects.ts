@@ -12,12 +12,12 @@ const Projects: RxJsonSchema<PersistableProject> = {
 	keyCompression: true,
 	required: ["id", "name", "layers", "members"],
 	properties: {
-		name: {
-			type: "string",
-		},
 		id: {
 			type: "string",
 			maxLength: 50,
+		},
+		name: {
+			type: "string",
 		},
 		layers: {
 			type: "array",

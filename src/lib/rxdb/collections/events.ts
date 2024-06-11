@@ -6,6 +6,7 @@ interface Metadata {
 }
 
 interface PersistableEvent<T extends DrawingEvents> {
+	aggregateTypeId: string
 	aggregateType: string
 	aggregateId: string
 	sequence: number
@@ -20,14 +21,22 @@ const Events: RxJsonSchema<PersistableEvent<DrawingEvents>> = {
 	version: 0,
 	title: "events",
 	description: "The event source events that make up this instance of Novum.",
-	primaryKey: "aggregateId",
+	primaryKey: {
+		key: "aggregateTypeId",
+		fields: ["aggregateId", "aggregateType", "sequence"],
+		separator: ".",
+	},
 	type: "object",
 	keyCompression: true,
 	required: ["aggregateId", "aggregateType", "sequence", "payload", "eventType"],
 	properties: {
+		aggregateTypeId: {
+			type: "string",
+			maxLength: 255,
+		},
 		aggregateId: {
 			type: "string",
-			maxLength: 40,
+			maxLength: 255,
 		},
 		aggregateType: {
 			type: "string",

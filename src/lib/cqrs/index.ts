@@ -1,3 +1,4 @@
+import { match } from "ts-pattern"
 import type { Metadata, PersistableEvent } from "$lib/rxdb/collections/events"
 import { dbInstance } from "$lib/rxdb/database"
 import type { ArtistCommands, DrawingEvents } from "$lib/types/commands-events"
@@ -65,6 +66,11 @@ class EventRepository {
 		console.info("Committing events", events)
 
 		const res = await dbInstance.events.bulkInsert(events)
+
+		if (res.error.length) {
+			console.error("Error committing events", res)
+			throw new AggregateError(`Error committing events`)
+		}
 
 		console.log(res)
 	}
