@@ -1,20 +1,6 @@
+import type { Metadata, PersistableEvent } from "$lib/rxdb/collections/events"
+import { dbInstance } from "$lib/rxdb/database"
 import type { ArtistCommands, DrawingEvents } from "$lib/types/commands-events"
-
-interface Metadata {
-	userId: string
-	userName: string
-}
-
-interface PersistableEvent<T extends DrawingEvents> {
-	aggregateType: string
-	aggregateId: string
-	sequence: number
-	eventType: string
-	eventVersion: string
-	payload: T
-	metadata: Metadata
-	timestamp: number
-}
 
 class AggregateError extends Error {
 	constructor(message: string) {
@@ -70,7 +56,7 @@ abstract class ViewRepository<Events extends DrawingEvents, V extends View<Event
 	abstract commit(): Promise<void>
 
 	abstract handle_event(event: Events): Promise<void>
-	abstract load(aggregateId: string): V | V[]
+	abstract load(aggregateId: string): Promise<V | V[]>
 }
 
 class EventRepository {
@@ -78,11 +64,9 @@ class EventRepository {
 		// In the real world, we would commit these events to a database.
 		console.info("Committing events", events)
 
-		const existingEvents = JSON.parse(localStorage.getItem("events") || "[]")
+		await dbInstance.events.bulkInsert(events)
 
-		localStorage.setItem("events", JSON.stringify([...existingEvents, ...events]))
-
-		return Promise.resolve()
+		return void 0
 	}
 }
 
@@ -131,8 +115,7 @@ class CQRS<A extends Aggregate<Events, ArtistCommands>, Events extends DrawingEv
 
 	async dispatch(aggregateId: string, command: ArtistCommands): Promise<Events[]> {
 		return this.dispatchWithMetadata(aggregateId, command, {
-			userId: "",
-			userName: "",
+			userAddress: "",
 		})
 	}
 }

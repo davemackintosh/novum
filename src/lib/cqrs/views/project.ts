@@ -1,5 +1,4 @@
 import { P, match } from "ts-pattern"
-import type { DisplayableLayer } from "../../../stores/event-stream"
 import { View } from "$lib/cqrs"
 import {
 	JoinEvent,
@@ -12,7 +11,7 @@ import {
 export class ProjectView extends View<DrawingEvents> {
 	public id?: string | null
 	public name?: string | null
-	public layers: DisplayableLayer[]
+	public layers: NewLayerEvent[]
 	public members: string[]
 
 	constructor(name?: string | null, id?: string | null) {
@@ -24,7 +23,7 @@ export class ProjectView extends View<DrawingEvents> {
 		this.members = []
 	}
 
-	handle_event(event: DrawingEvents): ProjectView {
+	public handle_event(event: DrawingEvents): ProjectView {
 		console.info("ProjectView received event", event)
 		return match(event)
 			.with(P.instanceOf(NewProjectEvent), (event) => {
@@ -36,20 +35,16 @@ export class ProjectView extends View<DrawingEvents> {
 			})
 			.with(P.instanceOf(NewLayerEvent), (event) => {
 				const pEvent = event as NewLayerEvent
-				const layer: DisplayableLayer = {
-					id: pEvent.id,
-					name: pEvent.name
-				}
-				this.layers.push(layer)
+				this.layers.push(pEvent)
 				return this
 			})
 			.with(P.instanceOf(JoinEvent), (event) => {
-				this.members.push(event.userId)
+				this.members.push(event.userAddress)
 
 				return this
 			})
 			.with(P.instanceOf(LeaveEvent), (event) => {
-				this.members.splice(this.members.indexOf(event.userId), 1)
+				this.members.splice(this.members.indexOf(event.userAddress), 1)
 
 				return this
 			})

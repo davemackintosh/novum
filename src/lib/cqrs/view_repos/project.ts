@@ -2,6 +2,7 @@ import { ViewRepository, type PersistableEvent } from ".."
 import { ProjectView } from "../views/project"
 import { projects } from "../../../stores/project"
 import { persistableEventToDrawingEvents, type DrawingEvents } from "$lib/types/commands-events"
+import { dbInstance } from "$lib/rxdb/database"
 
 export class ProjectViewRepo extends ViewRepository<DrawingEvents, ProjectView> {
 	constructor() {
@@ -10,8 +11,13 @@ export class ProjectViewRepo extends ViewRepository<DrawingEvents, ProjectView> 
 	}
 
 	async commit(): Promise<void> {
-		console.info("Committing this project to localStorage", this)
-		localStorage.setItem("project", JSON.stringify(this.view))
+		console.info("Committing this project to storage", this.view)
+		console.log("UPSERT", await dbInstance.projects.upsert({
+			id: this.view.id,
+			name: this.view.name,
+			layers: this.view.layers,
+			members: this.view.members
+		}))
 	}
 
 	async handle_event(event: DrawingEvents) {
@@ -19,13 +25,11 @@ export class ProjectViewRepo extends ViewRepository<DrawingEvents, ProjectView> 
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	load(_: string | null = null): ProjectView[] {
+	async load(_: string | null = null): Promise<ProjectView[]> {
 		const projectViews = new Map<string, ProjectView>()
-		const events: PersistableEvent<DrawingEvents>[] = JSON.parse(
-			localStorage.getItem("events") || "[]",
-		)
+		const events: PersistableEvent<DrawingEvents>[] = await dbInstance.events.find().exec()
 
-		console.info("Loading projects from localStorage", events)
+		console.info("Loaded events from storage", events)
 
 		for (const event of events) {
 			const drawingEvent = persistableEventToDrawingEvents(event)

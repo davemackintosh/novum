@@ -30,3 +30,7 @@ The CQRS is responsible for the reading and writing separation, in this demo it'
 Event sourcing is what gives us the time travel through application state as well as the ability to; at any time, change our data model without ever changing the data source. It gives us a versionable protocol which means that our software is always backwards and forwards compatible (so long as the command and even handlers remain the same.)
 
 The ECS is responsible for the handling of drawing objects to the canvas based on the events provided and or loaded from the event store. This means that our writing is it's own domain, reading/querying is it's own domain and rendering is it's own domain.
+
+## Getting started.
+
+`yarn && yarn dev` will run a vite server at the default address and you should be good to go.

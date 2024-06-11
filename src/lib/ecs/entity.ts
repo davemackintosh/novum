@@ -1,12 +1,11 @@
 import type { IComponent } from "./abstracts"
-import { createUUID } from "$lib/uuid"
 
 export class Entity {
 	public readonly id: string
 	public readonly components: IComponent[]
 
 	constructor(id?: string) {
-		this.id = id ?? createUUID()
+		this.id = id ?? crypto.randomUUID()
 		this.components = []
 	}
 

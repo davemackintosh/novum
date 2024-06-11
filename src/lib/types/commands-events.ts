@@ -12,7 +12,6 @@ import { match } from "ts-pattern"
 import type { PersistableEvent } from "$lib/cqrs"
 import type { Drawable, Vector } from "$lib/ecs/components/drawings"
 import { DrawableStyles } from "$lib/ecs/components/drawings"
-import { createUUID } from "$lib/uuid"
 
 /// COMMANDS
 // Commands result in events that ultimately changes what anyone will and can see.
@@ -100,24 +99,20 @@ abstract class EventBase {
 }
 
 class JoinEvent extends EventBase {
-	userName: string
-	userId: string
+	userAddress: string
 
-	constructor(userName: string) {
+	constructor(userAddress: string) {
 		super("1.0.0")
-		this.userName = userName
-		this.userId = createUUID()
+		this.userAddress = userAddress
 	}
 }
 
 class LeaveEvent extends EventBase {
-	userName: string
-	userId: string
+	userAddress: string
 
-	constructor(userName: string, userId: string) {
+	constructor(userAddress: string) {
 		super("1.0.0")
-		this.userName = userName
-		this.userId = userId
+		this.userAddress = userAddress
 	}
 }
 
@@ -136,7 +131,7 @@ class NewLayerEvent extends EventBase {
 	name: string
 	id: string
 
-	constructor(name: string = "new layer", id: string = createUUID()) {
+	constructor(name: string = "new layer", id: string = crypto.randomUUID()) {
 		super("1.0.0")
 		this.name = name
 		this.id = id
@@ -207,14 +202,12 @@ function persistableEventToDrawingEvents(event: PersistableEvent<DrawingEvents>)
 			const pEvent = event as PersistableEvent<NewProjectEvent>
 			return new NewProjectEvent(pEvent.payload.name, pEvent.payload.id)
 		})
-		.with({ eventType: "JoinEvent" }, () => new JoinEvent(event.metadata.userName))
+		.with({ eventType: "JoinEvent" }, () => new JoinEvent(event.metadata.userAddress))
 		.with(
 			{ eventType: "LeaveEvent" },
 			() =>
 				new LeaveEvent(
-					event.metadata.userName,
-					event.metadata.userId,
-					(event.payload as LeaveEvent).destroy,
+					event.metadata.userAddress,
 				),
 		)
 		.with(

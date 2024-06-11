@@ -3,7 +3,6 @@ import { Entity } from "./entity"
 import { persistableEventsToEntities } from "./utils"
 import type { DrawingEvents } from "$lib/types/commands-events"
 import type { PersistableEvent } from "$lib/cqrs"
-import { createUUID } from "$lib/uuid"
 
 // A basic ECS for drawing on a canvas across multiple users.
 export class ECS {
@@ -20,7 +19,7 @@ export class ECS {
 	}
 
 	createEntity(aggregateId?: string): Entity {
-		const entityId = aggregateId || createUUID()
+		const entityId = aggregateId || crypto.randomUUID()
 		// In the real world, this would be problematic as entities are likely to be created in
 		// quick succession which would result in the same entity being created multiple times or
 		// consuming the same "id".

@@ -2,27 +2,26 @@
 	import { onMount } from "svelte"
 	import { P, match } from "ts-pattern"
 	import { currentProject, projects } from "../stores/project"
+	import { userAddress } from "../stores/user"
 	import Projects from "../components/projects.svelte"
-	import type { DisplayableLayer } from "../stores/event-stream"
 	import { CQRS } from "$lib/cqrs"
 	import { ArtistAggregator } from "$lib/cqrs/aggregates/artist"
 	import { ECS } from "$lib/ecs"
 	import {
 		EndDrawingCommand,
 		NewLayerCommand,
+		NewLayerEvent,
 		StartDrawingCommand,
 	} from "$lib/types/commands-events"
 	import { ProjectViewRepo } from "$lib/cqrs/view_repos/project"
 	import { DrawingSystem } from "$lib/ecs/systems/drawing"
 	import { DrawableStyles, Quadrilateral, Vector } from "$lib/ecs/components/drawings"
-	import { createUUID } from "$lib/uuid"
 
-	let userAddress = createUUID()
 	let canvas: HTMLCanvasElement | null
 	let error: string | null = null
 	let color: string = "#000000"
 	let thickness: number = 1
-	let currentLayer: DisplayableLayer | null = null
+	let currentLayer: NewLayerEvent | null = null
 	let render: boolean = true
 
 	// In the real world, an ECS solves a data locality problem,
@@ -49,7 +48,7 @@
 		viewRepo.load()
 	}
 
-	function selectLayer(selectedLayerentity: DisplayableLayer) {
+	function selectLayer(selectedLayerentity: NewLayerEvent) {
 		currentLayer = selectedLayerentity
 	}
 
@@ -66,10 +65,11 @@
 			new StartDrawingCommand(
 				new Vector(event.offsetX, event.offsetY),
 				new Quadrilateral(new Vector(event.offsetX, event.offsetY), undefined),
+				currentLayer,
 				style,
 			),
 			{
-				userId: userAddress,
+				userId: $userAddress,
 				userName: "",
 			},
 		)
@@ -88,9 +88,11 @@
 			new EndDrawingCommand(
 				new Vector(event.offsetX, event.offsetY),
 				new Quadrilateral(undefined, new Vector(event.offsetX, event.offsetY)),
+				currentLayer,
+				style,
 			),
 			{
-				userId: userAddress,
+				userId: $userAddress,
 				userName: "",
 			},
 		)
@@ -128,7 +130,7 @@
 <div class="app">
 	<aside>
 		<p>
-			{userAddress}
+			{$userAddress}
 			<small>
 				Save this somewhere safe, this is your unique Novum address. Lose this and you lose all your
 				work and invites.

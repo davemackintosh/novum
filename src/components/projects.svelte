@@ -3,7 +3,6 @@
 	import type { ProjectView } from "$lib/cqrs/views/project"
 	import type { CQRS, DrawingEvents } from "$lib/cqrs"
 	import type { ArtistAggregator } from "$lib/cqrs/aggregates/artist"
-	import { createUUID } from "$lib/uuid"
 	import { NewProjectCommand } from "$lib/types/commands-events"
 
 	let projectName = ""
@@ -11,7 +10,7 @@
 	export let cqrsInstance: CQRS<ArtistAggregator, DrawingEvents>
 
 	function newProject() {
-		const aggregateId = createUUID()
+		const aggregateId = crypto.randomUUID()
 		cqrsInstance.dispatch(aggregateId, new NewProjectCommand(projectName, aggregateId))
 	}
 </script>

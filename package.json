@@ -34,6 +34,8 @@
 	"type": "module",
 	"packageManager": "yarn@4.2.2",
 	"dependencies": {
+		"rxdb": "^15.24.0",
+		"rxjs": "^7.8.1",
 		"ts-pattern": "^5.1.2"
 	}
 }
