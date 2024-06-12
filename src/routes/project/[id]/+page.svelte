@@ -26,17 +26,8 @@
 	let currentLayer: NewLayerEvent | null = null
 	let render: boolean = true
 	let currentProject: RxDocument<ProjectView> | null = null
+	let layers: NewLayerEvent[] = []
 
-	// In the real world, an ECS solves a data locality problem,
-	// the CPU cache is much faster than the memory access so we
-	// want to keep all data in contigious memory so it can be cached better.
-	// An better implementation of this can be found in another repo of mine
-	// @link https://github.com/davemackintosh/schwiftyes-demo
-	//
-	// For the purposes of this demo, we are using a simple ECS implementation
-	// which allows us to attach multiple types of behaviours to a single entity
-	// which in a design platform allows us to be incredibly flexible and fast
-	// which for designers, is very useful/important.
 	const ecs = new ECS()
 	const viewRepo = new ProjectViewRepo()
 	const cqrs = new CQRS(new ArtistAggregator(), viewRepo)
@@ -50,7 +41,6 @@
 		await cqrs.dispatchWithMetadata(currentProject!.id!, new NewLayerCommand("new layer"), {
 			userAddress: $userAddress,
 		})
-		viewRepo.load()
 	}
 
 	function selectLayer(selectedLayerentity: NewLayerEvent) {
@@ -107,8 +97,8 @@
 	}
 
 	onMount(async () => {
-		await ecs.stateFromStorage()
-		viewRepo.load()
+		await viewRepo.load($page.params.id)
+		await ecs.stateFromStorage($page.params.id)
 
 		currentProject = await dbInstance.projects
 			.findOne({
@@ -117,6 +107,10 @@
 				},
 			})
 			.exec()
+
+		currentProject?.layers$.subscribe((nextLayers) => {
+			layers = nextLayers
+		})
 
 		if (currentProject?.id && !canvas) {
 			error = "Could not find canvas element"
@@ -155,7 +149,7 @@
 				</div>
 			</div>
 			<ol class="layers">
-				{#each currentProject.layers as layer}
+				{#each layers as layer}
 					<li class:selected={layer?.id === layer.id}>
 						<button on:click={() => selectLayer(layer)}>{layer.name}</button>
 					</li>

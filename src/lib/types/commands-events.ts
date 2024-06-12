@@ -1,13 +1,3 @@
-// Event streams will allow us to traverse through time
-// to create a history of events.
-// This typucally happens on the backend as a data/domain driven design principle
-// that gives us flexibility.
-// for the sake of brevity, we're just going to parse the event stream on the frontend
-// without any server-side processing.
-// This also begins the process of creating a CQRS type architecture which keeps all of
-// our code organised into verbs and nouns that means we have the flexibility to change our
-// read model any time we want without any historical data loss or architectural complexity.
-
 import { match } from "ts-pattern"
 import type { PersistableEvent } from "$lib/cqrs"
 import type { Drawable, Vector } from "$lib/ecs/components/drawings"
@@ -17,20 +7,26 @@ import { DrawableStyles } from "$lib/ecs/components/drawings"
 // Commands result in events that ultimately changes what anyone will and can see.
 
 class JoinCommand {
-	userName: string
+	userAddress: string
 
-	constructor(userName: string) {
-		this.userName = userName
+	constructor(userAddress: string) {
+		this.userAddress = userAddress
+	}
+}
+
+class InviteCommand {
+	inviteUserAddresses: string[]
+
+	constructor(inviteUserAddresses: string[]) {
+		this.inviteUserAddresses = inviteUserAddresses
 	}
 }
 
 class LeaveCommand {
-	userId: string
-	destroy?: boolean
+	userAddress: string
 
-	constructor(userId: string, destroy: boolean = false) {
-		this.userId = userId
-		this.destroy = destroy
+	constructor(userId: string) {
+		this.userAddress = userId
 	}
 }
 
@@ -99,6 +95,7 @@ type ArtistCommands =
 	| StartDrawingCommand
 	| EndDrawingCommand
 	| NewLayerCommand
+	| InviteCommand
 
 /// </COMMANDS
 
@@ -197,7 +194,16 @@ class EndQuadrilateralEvent extends DrawingEvent {
 	}
 }
 
-type DrawingEvents =
+class InviteEvent extends EventBase {
+	inviteUserAddresses: string[]
+
+	constructor(inviteUserAddresses: string[]) {
+		super("1.0.0")
+		this.inviteUserAddresses = inviteUserAddresses
+	}
+}
+
+type ProjectEvents =
 	| JoinEvent
 	| LeaveEvent
 	| StartLineEvent
@@ -207,11 +213,13 @@ type DrawingEvents =
 	| StartQuadrilateralEvent
 	| EndQuadrilateralEvent
 	| NewProjectEvent
+	| InviteEvent
+
 /// </EVENTS
 
 // There's a smarter way to get the actual type here, using type guards but for the sake of simplicity
 // I'll just cast to the event type based on the eventType property which is safe enough for now.
-function persistableEventToDrawingEvents(event: PersistableEvent<DrawingEvents>) {
+function persistableEventToProjectEvents(event: PersistableEvent<ProjectEvents>) {
 	return match(event)
 		.with({ eventType: "NewProjectEvent" }, () => {
 			const pEvent = event as PersistableEvent<NewProjectEvent>
@@ -239,15 +247,19 @@ function persistableEventToDrawingEvents(event: PersistableEvent<DrawingEvents>)
 			const pEvent = event as PersistableEvent<EndLineEvent>
 			return new EndQuadrilateralEvent(pEvent.payload.point, pEvent.payload.styles)
 		})
+		.with({ eventType: "InviteEvent" }, () => {
+			const pEvent = event as PersistableEvent<InviteEvent>
+			return new InviteEvent(pEvent.payload.inviteUserAddresses)
+		})
 		.otherwise(() => {
 			throw new Error(`Unknown event type: ${event.eventType}`)
 		})
 }
 
-function persistableEventsToDrawingEvents(
-	events: PersistableEvent<DrawingEvents>[],
-): DrawingEvents[] {
-	return events.map(persistableEventToDrawingEvents)
+function persistableEventsToProjectEvents(
+	events: PersistableEvent<ProjectEvents>[],
+): ProjectEvents[] {
+	return events.map(persistableEventToProjectEvents)
 }
 
 export {
@@ -264,12 +276,14 @@ export {
 	DrawingCommandBase,
 	StartDrawingCommand,
 	EndDrawingCommand,
-	type DrawingEvents,
+	type ProjectEvents as DrawingEvents,
 	type ArtistCommands,
-	persistableEventsToDrawingEvents,
-	persistableEventToDrawingEvents,
+	persistableEventsToProjectEvents,
+	persistableEventToProjectEvents,
 	DestroyArtistsArt,
 	DrawingEvent,
 	NewProjectCommand,
 	NewProjectEvent,
+	InviteCommand,
+	InviteEvent,
 }

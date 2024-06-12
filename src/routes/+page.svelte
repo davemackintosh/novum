@@ -1,19 +1,22 @@
 <script lang="ts">
 	import { onMount } from "svelte"
-	import { currentProject, projects } from "$lib/stores/project"
 	import { userAddress } from "$lib/stores/user"
 	import Projects from "$lib/components/projects.svelte"
 	import { CQRS } from "$lib/cqrs"
 	import { ArtistAggregator } from "$lib/cqrs/aggregates/project"
 	import { ProjectViewRepo } from "$lib/cqrs/view_repos/project"
+	import { ProjectQuery } from "$lib/cqrs/queries/project"
+	import type { ProjectView } from "$lib/cqrs/views/project"
 
 	let error: string | null = null
+	let projects: ProjectView[] = []
 
 	const viewRepo = new ProjectViewRepo()
 	const cqrs = new CQRS(new ArtistAggregator(), viewRepo)
+	const query = new ProjectQuery(viewRepo)
 
 	onMount(async () => {
-		viewRepo.load()
+		projects = await query.query({})
 	})
 </script>
 
@@ -30,8 +33,8 @@
 	<main>
 		{#if error}
 			<p>{error}</p>
-		{:else if !$currentProject?.id}
-			<Projects projects={$projects} cqrsInstance={cqrs} />
+		{:else}
+			<Projects {projects} cqrsInstance={cqrs} />
 		{/if}
 	</main>
 </div>

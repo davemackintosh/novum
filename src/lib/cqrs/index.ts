@@ -40,7 +40,7 @@ abstract class Query<
 		this.viewRepository = viewRepository
 	}
 
-	abstract query(query: Partial<V>): Returns
+	abstract query(query: Partial<V>): Promise<Returns>
 }
 
 abstract class ViewRepository<Events extends DrawingEvents, V extends View<Events>> {
@@ -65,6 +65,7 @@ class EventRepository {
 		console.info("Committing events", events)
 
 		for (const event of events) {
+			console.log("Inserting event", event)
 			await dbInstance.events.insert(event)
 		}
 
@@ -89,6 +90,8 @@ class CQRS<A extends Aggregate<Events, ArtistCommands>, Events extends DrawingEv
 			}
 		}).exec()
 
+		console.log("SEQUENCE", events.length)
+
 		return events.length
 	}
 
@@ -99,15 +102,16 @@ class CQRS<A extends Aggregate<Events, ArtistCommands>, Events extends DrawingEv
 		metadata: Metadata,
 	): Promise<Events[]> {
 		const events = await this.aggregate.handle_command(aggregateId, command, metadata)
-		let currentSequence = await this.getNextSequence(aggregateId)
-		const persistableEvents: PersistableEvent<DrawingEvents>[] = events.map((event) => {
-			const nextSequence = currentSequence++
+		const currentSequence = await this.getNextSequence(aggregateId) + 1
+
+		const persistableEvents: PersistableEvent<DrawingEvents>[] = events.map((event, i) => {
+			console.log("Next Sequence: ", currentSequence + i)
 
 			return {
-				aggregateTypeId: `${aggregateId}.${this.aggregate.name}.${nextSequence}`,
+				aggregateTypeId: `${aggregateId}.${this.aggregate.name}.${currentSequence + 1}`,
 				aggregateType: this.aggregate.name,
 				aggregateId: aggregateId,
-				sequence: nextSequence,
+				sequence: currentSequence + i,
 				eventType: event.constructor.name,
 				eventVersion: event.version,
 				payload: event,
@@ -127,12 +131,6 @@ class CQRS<A extends Aggregate<Events, ArtistCommands>, Events extends DrawingEv
 		}
 
 		return events
-	}
-
-	async dispatch(aggregateId: string, command: ArtistCommands): Promise<Events[]> {
-		return this.dispatchWithMetadata(aggregateId, command, {
-			userAddress: "",
-		})
 	}
 }
 

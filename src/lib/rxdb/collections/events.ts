@@ -21,11 +21,7 @@ const Events: RxJsonSchema<PersistableEvent<DrawingEvents>> = {
 	version: 0,
 	title: "events",
 	description: "The event source events that make up this instance of Novum.",
-	primaryKey: {
-		key: "aggregateTypeId",
-		fields: ["aggregateId", "aggregateType", "sequence"],
-		separator: ".",
-	},
+	primaryKey: "aggregateTypeId",
 	type: "object",
 	keyCompression: true,
 	required: ["aggregateId", "aggregateType", "sequence", "payload", "eventType"],
@@ -36,7 +32,6 @@ const Events: RxJsonSchema<PersistableEvent<DrawingEvents>> = {
 		},
 		aggregateId: {
 			type: "string",
-			maxLength: 255,
 		},
 		aggregateType: {
 			type: "string",

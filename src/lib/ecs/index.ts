@@ -1,8 +1,7 @@
 import type { IComponent, System } from "./abstracts"
 import { Entity } from "./entity"
 import { persistableEventsToEntities } from "./utils"
-import type { DrawingEvents } from "$lib/types/commands-events"
-import type { PersistableEvent } from "$lib/cqrs"
+import { dbInstance } from "$lib/rxdb/database"
 
 // A basic ECS for drawing on a canvas across multiple users.
 export class ECS {
@@ -42,10 +41,12 @@ export class ECS {
 		this.entities.splice(this.entities.indexOf(entity), 1)
 	}
 
-	async stateFromStorage(): Promise<void> {
-		const storedEvents: PersistableEvent<DrawingEvents>[] = JSON.parse(
-			localStorage.getItem("events") || "[]",
-		)
+	async stateFromStorage(aggregateId: string): Promise<void> {
+		const storedEvents = await dbInstance.events.find({
+			selector: {
+				aggregateId,
+			}
+		}).exec()
 		const newEntities = persistableEventsToEntities(storedEvents)
 
 		for (const newEntity of newEntities) {
