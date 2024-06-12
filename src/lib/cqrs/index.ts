@@ -1,4 +1,3 @@
-import { match } from "ts-pattern"
 import type { Metadata, PersistableEvent } from "$lib/rxdb/collections/events"
 import { dbInstance } from "$lib/rxdb/database"
 import type { ArtistCommands, DrawingEvents } from "$lib/types/commands-events"
@@ -65,14 +64,10 @@ class EventRepository {
 		// In the real world, we would commit these events to a database.
 		console.info("Committing events", events)
 
-		const res = await dbInstance.events.bulkInsert(events)
-
-		if (res.error.length) {
-			console.error("Error committing events", res)
-			throw new AggregateError(`Error committing events`)
+		for (const event of events) {
+			await dbInstance.events.insert(event)
 		}
 
-		console.log(res)
 	}
 }
 
@@ -87,6 +82,16 @@ class CQRS<A extends Aggregate<Events, ArtistCommands>, Events extends DrawingEv
 		this.viewRepository = viewRepository
 	}
 
+	async getNextSequence(aggregateId: string): Promise<number> {
+		const events = await dbInstance.events.find({
+			selector: {
+				aggregateId,
+			}
+		}).exec()
+
+		return events.length
+	}
+
 	// Handle a command.
 	async dispatchWithMetadata(
 		aggregateId: string,
@@ -94,17 +99,22 @@ class CQRS<A extends Aggregate<Events, ArtistCommands>, Events extends DrawingEv
 		metadata: Metadata,
 	): Promise<Events[]> {
 		const events = await this.aggregate.handle_command(aggregateId, command, metadata)
-		let currentSequence = JSON.parse(localStorage.getItem("events") || "[]").length
-		const persistableEvents: PersistableEvent<DrawingEvents>[] = events.map((event) => ({
-			aggregateType: this.aggregate.name,
-			aggregateId: aggregateId,
-			sequence: currentSequence++,
-			eventType: event.constructor.name,
-			eventVersion: event.version,
-			payload: event,
-			metadata: metadata,
-			timestamp: Date.now(),
-		}))
+		let currentSequence = await this.getNextSequence(aggregateId)
+		const persistableEvents: PersistableEvent<DrawingEvents>[] = events.map((event) => {
+			const nextSequence = currentSequence++
+
+			return {
+				aggregateTypeId: `${aggregateId}.${this.aggregate.name}.${nextSequence}`,
+				aggregateType: this.aggregate.name,
+				aggregateId: aggregateId,
+				sequence: nextSequence,
+				eventType: event.constructor.name,
+				eventVersion: event.version,
+				payload: event,
+				metadata: metadata,
+				timestamp: Date.now(),
+			}
+		})
 
 		await this.eventRepository.commit(persistableEvents)
 

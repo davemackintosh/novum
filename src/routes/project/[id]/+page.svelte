@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte"
 	import { P, match } from "ts-pattern"
+	import { type RxDocument } from "rxdb"
 	import { userAddress } from "$lib/stores/user"
 	import { CQRS } from "$lib/cqrs"
 	import { ArtistAggregator } from "$lib/cqrs/aggregates/project"
@@ -14,6 +15,7 @@
 	import { ProjectViewRepo } from "$lib/cqrs/view_repos/project"
 	import { DrawingSystem } from "$lib/ecs/systems/drawing"
 	import { DrawableStyles, Quadrilateral, Vector } from "$lib/ecs/components/drawings"
+	import { ProjectView } from "$lib/cqrs/views/project"
 	import { dbInstance } from "$lib/rxdb/database"
 	import { page } from "$app/stores"
 
@@ -23,11 +25,7 @@
 	let thickness: number = 1
 	let currentLayer: NewLayerEvent | null = null
 	let render: boolean = true
-	let currentProject = dbInstance.projects.find({
-		selector: {
-			id: $page.params.id,
-		},
-	})
+	let currentProject: RxDocument<ProjectView> | null = null
 
 	// In the real world, an ECS solves a data locality problem,
 	// the CPU cache is much faster than the memory access so we
@@ -49,7 +47,7 @@
 		if (!currentProject) {
 			throw new ReferenceError("no current project")
 		}
-		await cqrs.dispatchWithMetadata(currentProject!.id, new NewLayerCommand("new layer"), {
+		await cqrs.dispatchWithMetadata(currentProject!.id!, new NewLayerCommand("new layer"), {
 			userAddress: $userAddress,
 		})
 		viewRepo.load()
@@ -104,15 +102,21 @@
 	}
 
 	function loop() {
-		if (render) {
-			ecs.update()
-			requestAnimationFrame(loop)
-		}
+		ecs.update()
+		requestAnimationFrame(loop)
 	}
 
 	onMount(async () => {
 		await ecs.stateFromStorage()
 		viewRepo.load()
+
+		currentProject = await dbInstance.projects
+			.findOne({
+				selector: {
+					id: $page.params.id,
+				},
+			})
+			.exec()
 
 		if (currentProject?.id && !canvas) {
 			error = "Could not find canvas element"
@@ -141,7 +145,9 @@
 				work and invites.
 			</small>
 		</p>
-		{#await currentProject}
+		{#if !currentProject}
+			<p>Loading...</p>
+		{:else}
 			<div class="project-meta">
 				<p><strong>{currentProject?.name}</strong></p>
 				<div class="toolbox">
@@ -155,7 +161,7 @@
 					</li>
 				{/each}
 			</ol>
-		{/await}
+		{/if}
 	</aside>
 	<main>
 		{#if error}

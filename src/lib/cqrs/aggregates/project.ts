@@ -23,7 +23,7 @@ import { Line, Quadrilateral } from "$lib/ecs/components/drawings"
 
 export class ArtistAggregator extends Aggregate<DrawingEvents, ArtistCommands> {
 	constructor() {
-		super("artists", 1)
+		super("project", 1)
 	}
 
 	async handle_command(

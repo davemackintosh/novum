@@ -5,27 +5,14 @@
 	import Projects from "$lib/components/projects.svelte"
 	import { CQRS } from "$lib/cqrs"
 	import { ArtistAggregator } from "$lib/cqrs/aggregates/project"
-	import { ECS } from "$lib/ecs"
 	import { ProjectViewRepo } from "$lib/cqrs/view_repos/project"
 
 	let error: string | null = null
 
-	// In the real world, an ECS solves a data locality problem,
-	// the CPU cache is much faster than the memory access so we
-	// want to keep all data in contigious memory so it can be cached better.
-	// An better implementation of this can be found in another repo of mine
-	// @link https://github.com/davemackintosh/schwiftyes-demo
-	//
-	// For the purposes of this demo, we are using a simple ECS implementation
-	// which allows us to attach multiple types of behaviours to a single entity
-	// which in a design platform allows us to be incredibly flexible and fast
-	// which for designers, is very useful/important.
-	const ecs = new ECS()
 	const viewRepo = new ProjectViewRepo()
 	const cqrs = new CQRS(new ArtistAggregator(), viewRepo)
 
 	onMount(async () => {
-		await ecs.stateFromStorage()
 		viewRepo.load()
 	})
 </script>

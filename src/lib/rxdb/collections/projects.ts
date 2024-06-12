@@ -1,9 +1,7 @@
 import { type RxCollection, type RxJsonSchema } from "rxdb"
 import type { ProjectView } from "$lib/cqrs/views/project"
 
-type PersistableProject = Omit<ProjectView, "handle_event">
-
-const Projects: RxJsonSchema<PersistableProject> = {
+const Projects: RxJsonSchema<ProjectView> = {
 	version: 0,
 	title: "projects",
 	description: "Persistance of the ProjectView.",
@@ -31,9 +29,12 @@ const Projects: RxJsonSchema<PersistableProject> = {
 				type: "string",
 			},
 		},
+		handle_event: {
+			type: "null"
+		}
 	},
 } as const
 
-type ProjectsCollection = RxCollection<PersistableProject>
+type ProjectsCollection = RxCollection<ProjectView>
 
 export { Projects, type ProjectsCollection }
