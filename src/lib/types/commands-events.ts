@@ -41,9 +41,21 @@ class NewProjectCommand {
 }
 
 class NewLayerCommand {
+	id: string
 	name: string
 
 	constructor(name: string) {
+		this.id = crypto.randomUUID()
+		this.name = name
+	}
+}
+
+class SetLayerNameCommand {
+	id: string
+	name: string
+
+	constructor(id: string, name: string) {
+		this.id = id
 		this.name = name
 	}
 }
@@ -89,6 +101,14 @@ class EndDrawingCommand extends DrawingCommandBase {
 	}
 }
 
+class DeleteLayerCommand {
+	id: string
+
+	constructor(id: string) {
+		this.id = id
+	}
+}
+
 type ArtistCommands =
 	| JoinCommand
 	| LeaveCommand
@@ -96,6 +116,8 @@ type ArtistCommands =
 	| EndDrawingCommand
 	| NewLayerCommand
 	| InviteCommand
+	| SetLayerNameCommand
+	| DeleteLayerCommand
 
 /// </COMMANDS
 
@@ -140,13 +162,22 @@ class NewProjectEvent extends EventBase {
 }
 
 class NewLayerEvent extends EventBase {
-	name: string
 	id: string
 
-	constructor(name: string = "new layer", id: string = crypto.randomUUID()) {
+	constructor(id: string = crypto.randomUUID()) {
 		super("1.0.0")
-		this.name = name
 		this.id = id
+	}
+}
+
+class SetLayerNameEvent extends EventBase {
+	id: string
+	name: string
+
+	constructor(id: string, name: string) {
+		super("1.0.0")
+		this.id = id
+		this.name = name
 	}
 }
 
@@ -203,6 +234,15 @@ class InviteEvent extends EventBase {
 	}
 }
 
+class DeleteLayerEvent extends EventBase {
+	id: string
+
+	constructor(id: string) {
+		super("1.0.0")
+		this.id = id
+	}
+}
+
 type ProjectEvents =
 	| JoinEvent
 	| LeaveEvent
@@ -210,6 +250,8 @@ type ProjectEvents =
 	| EndLineEvent
 	| DestroyArtistsArt
 	| NewLayerEvent
+	| SetLayerNameEvent
+	| DeleteLayerEvent
 	| StartQuadrilateralEvent
 	| EndQuadrilateralEvent
 	| NewProjectEvent
@@ -229,8 +271,12 @@ function persistableEventToProjectEvents(event: PersistableEvent<ProjectEvents>)
 		.with({ eventType: "LeaveEvent" }, () => new LeaveEvent(event.metadata.userAddress))
 		.with(
 			{ eventType: "NewLayerEvent" },
-			() => new NewLayerEvent((event.payload as NewLayerEvent).name),
+			() => new NewLayerEvent(),
 		)
+		.with({ eventType: "SetLayerNameEvent" }, () => {
+			const pEvent = event as PersistableEvent<SetLayerNameEvent>
+			return new SetLayerNameEvent(pEvent.payload.name)
+		})
 		.with({ eventType: "StartLineEvent" }, () => {
 			const pEvent = event as PersistableEvent<StartLineEvent>
 			return new StartLineEvent(pEvent.payload.point, pEvent.payload.styles)
@@ -286,4 +332,8 @@ export {
 	NewProjectEvent,
 	InviteCommand,
 	InviteEvent,
+	DeleteLayerCommand,
+	DeleteLayerEvent,
+	SetLayerNameCommand,
+	SetLayerNameEvent,
 }

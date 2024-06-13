@@ -15,7 +15,7 @@
 	import { ProjectViewRepo } from "$lib/cqrs/view_repos/project"
 	import { DrawingSystem } from "$lib/ecs/systems/drawing"
 	import { DrawableStyles, Quadrilateral, Vector } from "$lib/ecs/components/drawings"
-	import { ProjectView } from "$lib/cqrs/views/project"
+	import { ProjectView, Layer } from "$lib/cqrs/views/project"
 	import { dbInstance } from "$lib/rxdb/database"
 	import { page } from "$app/stores"
 
@@ -26,7 +26,7 @@
 	let currentLayer: NewLayerEvent | null = null
 	let render: boolean = true
 	let currentProject: RxDocument<ProjectView> | null = null
-	let layers: NewLayerEvent[] = []
+	let layers: Layer[] = []
 
 	const ecs = new ECS()
 	const viewRepo = new ProjectViewRepo()

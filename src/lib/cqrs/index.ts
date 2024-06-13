@@ -108,7 +108,7 @@ class CQRS<A extends Aggregate<Events, ArtistCommands>, Events extends DrawingEv
 			console.log("Next Sequence: ", currentSequence + i)
 
 			return {
-				aggregateTypeId: `${aggregateId}.${this.aggregate.name}.${currentSequence + 1}`,
+				aggregateTypeId: `${aggregateId}.${this.aggregate.name}.${currentSequence + i}`,
 				aggregateType: this.aggregate.name,
 				aggregateId: aggregateId,
 				sequence: currentSequence + i,
