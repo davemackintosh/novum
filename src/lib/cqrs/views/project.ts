@@ -47,9 +47,9 @@ class ProjectView extends View {
 				aggregateId,
 			},
 		}).$.subscribe((values) => {
+			console.log("received updates to view ", values)
 			const events = persistableEventsToProjectEvents(values)
 			events.forEach((event) => this.handle_event(event))
-			console.log("received updates to view ", events)
 		})
 	}
 

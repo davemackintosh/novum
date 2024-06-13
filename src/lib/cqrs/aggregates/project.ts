@@ -17,6 +17,7 @@ import {
 	JoinCommand,
 	NewProjectEvent,
 	NewProjectCommand,
+	SetLayerNameEvent,
 } from "$lib/types/commands-events"
 import { Line, Quadrilateral } from "$lib/ecs/components/drawings"
 
@@ -55,7 +56,10 @@ export class ArtistAggregator extends Aggregate<ProjectEvents, ProjectCommands> 
 					})
 			})
 			.with(P.instanceOf(NewLayerCommand), (command: NewLayerCommand) => {
-				return [new NewLayerEvent(command.name)]
+				return [
+					new NewLayerEvent(command.id),
+					new SetLayerNameEvent(command.id, command.name),
+				]
 			})
 			.with(P.instanceOf(EndDrawingCommand), (command: EndDrawingCommand) => {
 				return match(command.type)
