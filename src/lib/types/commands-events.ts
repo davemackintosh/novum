@@ -109,7 +109,7 @@ class DeleteLayerCommand {
 	}
 }
 
-type ArtistCommands =
+type ProjectCommands =
 	| JoinCommand
 	| LeaveCommand
 	| StartDrawingCommand
@@ -275,7 +275,7 @@ function persistableEventToProjectEvents(event: PersistableEvent<ProjectEvents>)
 		)
 		.with({ eventType: "SetLayerNameEvent" }, () => {
 			const pEvent = event as PersistableEvent<SetLayerNameEvent>
-			return new SetLayerNameEvent(pEvent.payload.name)
+			return new SetLayerNameEvent(pEvent.payload.id, pEvent.payload.name)
 		})
 		.with({ eventType: "StartLineEvent" }, () => {
 			const pEvent = event as PersistableEvent<StartLineEvent>
@@ -322,8 +322,8 @@ export {
 	DrawingCommandBase,
 	StartDrawingCommand,
 	EndDrawingCommand,
-	type ProjectEvents as DrawingEvents,
-	type ArtistCommands,
+	type ProjectEvents,
+	type ProjectCommands,
 	persistableEventsToProjectEvents,
 	persistableEventToProjectEvents,
 	DestroyArtistsArt,

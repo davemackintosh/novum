@@ -1,12 +1,11 @@
 import { P, match } from "ts-pattern"
 import { Aggregate, AggregateError, type Metadata } from "$lib/cqrs"
 import {
-	type DrawingEvents,
-	type ArtistCommands,
+	type ProjectEvents,
+	type ProjectCommands,
 	JoinEvent,
 	LeaveCommand,
 	LeaveEvent,
-	DestroyArtistsArt,
 	StartDrawingCommand,
 	StartLineEvent,
 	StartQuadrilateralEvent,
@@ -21,31 +20,25 @@ import {
 } from "$lib/types/commands-events"
 import { Line, Quadrilateral } from "$lib/ecs/components/drawings"
 
-export class ArtistAggregator extends Aggregate<DrawingEvents, ArtistCommands> {
+export class ArtistAggregator extends Aggregate<ProjectEvents, ProjectCommands> {
 	constructor() {
 		super("project", 1)
 	}
 
 	async handle_command(
 		aggregateId: string,
-		command: ArtistCommands,
+		command: ProjectCommands,
 		metadata: Metadata,
-	): Promise<DrawingEvents[]> {
+	): Promise<ProjectEvents[]> {
 		console.info("handling command", aggregateId, command)
 
 		return match(command)
 			.with(P.instanceOf(JoinCommand), (command: JoinCommand) => {
 				return [new JoinEvent(command.userAddress)]
 			})
-			.with(P.instanceOf(LeaveCommand), (command: LeaveCommand) => {
-				const events: DrawingEvents[] = [new LeaveEvent(metadata.userAddress)]
-
-				if (command.destroy) {
-					events.push(new DestroyArtistsArt(command.userAddress))
-				}
-
-				return events
-			})
+			.with(P.instanceOf(LeaveCommand), () => (
+				[new LeaveEvent(metadata.userAddress)]
+			))
 			.with(P.instanceOf(NewProjectCommand), (command) => {
 				return [new NewProjectEvent(command.name, command.id)]
 			})

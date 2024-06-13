@@ -1,6 +1,6 @@
 import type { Metadata, PersistableEvent } from "$lib/rxdb/collections/events"
 import { dbInstance } from "$lib/rxdb/database"
-import type { ArtistCommands, DrawingEvents } from "$lib/types/commands-events"
+import type { ProjectEvents, ProjectCommands } from "$lib/types/commands-events"
 
 class AggregateError extends Error {
 	constructor(message: string) {
@@ -9,7 +9,7 @@ class AggregateError extends Error {
 	}
 }
 
-abstract class Aggregate<Events extends DrawingEvents, Commands extends ArtistCommands> {
+abstract class Aggregate<Events extends ProjectEvents, Commands extends ProjectCommands> {
 	public readonly name: string
 	private readonly version: number
 
@@ -25,13 +25,15 @@ abstract class Aggregate<Events extends DrawingEvents, Commands extends ArtistCo
 	): Promise<Events[]>
 }
 
-abstract class View<Events extends DrawingEvents> {
+abstract class View<Events extends ProjectEvents = ProjectEvents> {
+	abstract subscribe_to_events(aggregateId: string): void
+
 	abstract handle_event(_event: Events): View<Events>
 }
 
 abstract class Query<
-	V extends View<DrawingEvents>,
-	VR extends ViewRepository<DrawingEvents, V>,
+	V extends View<ProjectEvents>,
+	VR extends ViewRepository<ProjectEvents, V>,
 	Returns,
 > {
 	protected readonly viewRepository: VR
@@ -43,7 +45,7 @@ abstract class Query<
 	abstract query(query: Partial<V>): Promise<Returns>
 }
 
-abstract class ViewRepository<Events extends DrawingEvents, V extends View<Events>> {
+abstract class ViewRepository<Events extends ProjectEvents, V extends View<Events>> {
 	private readonly name: string
 	protected readonly view: V
 
@@ -60,7 +62,7 @@ abstract class ViewRepository<Events extends DrawingEvents, V extends View<Event
 }
 
 class EventRepository {
-	async commit(events: PersistableEvent<DrawingEvents>[]): Promise<void> {
+	async commit(events: PersistableEvent<ProjectEvents>[]): Promise<void> {
 		// In the real world, we would commit these events to a database.
 		console.info("Committing events", events)
 
@@ -72,7 +74,7 @@ class EventRepository {
 	}
 }
 
-class CQRS<A extends Aggregate<Events, ArtistCommands>, Events extends DrawingEvents> {
+class CQRS<A extends Aggregate<Events, ProjectCommands>, Events extends ProjectEvents> {
 	private readonly aggregate: A
 	private readonly eventRepository: EventRepository
 	private readonly viewRepository: ViewRepository<Events, View<Events>>
@@ -98,13 +100,13 @@ class CQRS<A extends Aggregate<Events, ArtistCommands>, Events extends DrawingEv
 	// Handle a command.
 	async dispatchWithMetadata(
 		aggregateId: string,
-		command: ArtistCommands,
+		command: ProjectCommands,
 		metadata: Metadata,
 	): Promise<Events[]> {
 		const events = await this.aggregate.handle_command(aggregateId, command, metadata)
 		const currentSequence = await this.getNextSequence(aggregateId) + 1
 
-		const persistableEvents: PersistableEvent<DrawingEvents>[] = events.map((event, i) => {
+		const persistableEvents: PersistableEvent<ProjectEvents>[] = events.map((event, i) => {
 			console.log("Next Sequence: ", currentSequence + i)
 
 			return {
@@ -144,5 +146,5 @@ export {
 	EventRepository,
 	type PersistableEvent,
 	type Metadata,
-	type DrawingEvents,
+	type ProjectEvents,
 }

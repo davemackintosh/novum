@@ -6,8 +6,10 @@ import {
 	NewLayerEvent,
 	NewProjectEvent,
 	SetLayerNameEvent,
-	type DrawingEvents,
+	persistableEventsToProjectEvents,
+	type ProjectEvents,
 } from "$lib/types/commands-events"
+import { dbInstance } from "$lib/rxdb/database"
 
 class Layer {
 	id: string
@@ -19,7 +21,7 @@ class Layer {
 	}
 }
 
-class ProjectView extends View<DrawingEvents> {
+class ProjectView extends View {
 	public id?: string | null
 	public name?: string | null
 	public layers: Layer[]
@@ -32,9 +34,26 @@ class ProjectView extends View<DrawingEvents> {
 		this.name = name
 		this.layers = []
 		this.members = []
+
+		if (id)
+			this.subscribe_to_events(id)
 	}
 
-	public handle_event(event: DrawingEvents): ProjectView {
+	// Apparently, you can't have a private abstract method in a TypeScript class,
+	// which is fucking stupid.
+	public subscribe_to_events(aggregateId: string) {
+		dbInstance.events.find({
+			selector: {
+				aggregateId,
+			},
+		}).$.subscribe((values) => {
+			const events = persistableEventsToProjectEvents(values)
+			events.forEach((event) => this.handle_event(event))
+			console.log("received updates to view ", events)
+		})
+	}
+
+	public handle_event(event: ProjectEvents): ProjectView {
 		console.info("ProjectView received event", event)
 		return match(event)
 			.with(P.instanceOf(NewProjectEvent), (event) => {
