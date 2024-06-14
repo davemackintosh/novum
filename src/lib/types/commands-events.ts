@@ -1,7 +1,5 @@
 import { match } from "ts-pattern"
 import type { PersistableEvent } from "$lib/cqrs"
-import type { Drawable, Vector } from "$lib/ecs/components/drawings"
-import { DrawableStyles } from "$lib/ecs/components/drawings"
 
 /// COMMANDS
 // Commands result in events that ultimately changes what anyone will and can see.

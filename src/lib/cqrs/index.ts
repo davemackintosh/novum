@@ -26,8 +26,6 @@ abstract class Aggregate<Events extends ProjectEvents, Commands extends ProjectC
 }
 
 abstract class View<Events extends ProjectEvents = ProjectEvents> {
-	abstract subscribe_to_events(aggregateId: string): void
-
 	abstract handle_event(_event: Events): View<Events>
 }
 

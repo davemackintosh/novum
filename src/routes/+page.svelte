@@ -17,6 +17,11 @@
 
 	onMount(async () => {
 		projects = await query.query({})
+
+		query.subscribe({}, (newProjects) => {
+			error = null
+			projects = newProjects
+		})
 	})
 </script>
 

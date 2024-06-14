@@ -5,37 +5,34 @@
 	import { CQRS } from "$lib/cqrs"
 	import { ArtistAggregator } from "$lib/cqrs/aggregates/project"
 	import { ECS } from "$lib/ecs"
-	import {
-		EndDrawingCommand,
-		NewLayerCommand,
-		StartDrawingCommand,
-	} from "$lib/types/commands-events"
+	import { NewLayerCommand } from "$lib/types/commands-events"
 	import { ProjectViewRepo } from "$lib/cqrs/view_repos/project"
 	import { DrawingSystem } from "$lib/ecs/systems/drawing"
-	import { DrawableStyles, Quadrilateral, Vector } from "$lib/ecs/components/drawings"
 	import { ProjectView, Layer } from "$lib/cqrs/views/project"
 	import { page } from "$app/stores"
+	import { ProjectQuery } from "$lib/cqrs/queries/project"
 
 	let canvas: HTMLCanvasElement | null
-	let color: string = "#000000"
-	let thickness: number = 1
 	let currentLayer: Layer | null = null
 	let render: boolean = true
 	let currentProject: ProjectView | null = null
 
 	const ecs = new ECS()
 	const viewRepo = new ProjectViewRepo()
+	const query = new ProjectQuery(viewRepo)
 	const cqrs = new CQRS(new ArtistAggregator(), viewRepo)
-
-	$: style = new DrawableStyles(color, thickness)
 
 	async function createNewLayer() {
 		if (!currentProject) {
 			throw new ReferenceError("no current project")
 		}
-		await cqrs.dispatchWithMetadata(currentProject!.id!, new NewLayerCommand("new layer"), {
-			userAddress: $userAddress,
-		})
+		await cqrs.dispatchWithMetadata(
+			currentProject!.id!,
+			new NewLayerCommand("new layer " + (currentProject!.layers.length + 1)),
+			{
+				userAddress: $userAddress,
+			},
+		)
 	}
 
 	function selectLayer(selectedLayerentity: Layer) {
@@ -47,21 +44,9 @@
 			throw new ReferenceError("no current project")
 		}
 		if (!currentLayer) {
-			console.warn("Layer not selected")
+			console.warn("Layer not selected", event)
 			return
 		}
-		cqrs.dispatchWithMetadata(
-			currentProject.id!,
-			new StartDrawingCommand(
-				new Vector(event.offsetX, event.offsetY),
-				new Quadrilateral(new Vector(event.offsetX, event.offsetY), undefined),
-				currentLayer.id,
-				style,
-			),
-			{
-				userAddress: $userAddress,
-			},
-		)
 	}
 
 	async function endDrawing(event: MouseEvent) {
@@ -69,21 +54,9 @@
 			throw new ReferenceError("no current project")
 		}
 		if (!currentLayer) {
-			console.warn("Layer not selected")
+			console.warn("Layer not selected", event)
 			return
 		}
-		cqrs.dispatchWithMetadata(
-			currentProject!.id!,
-			new EndDrawingCommand(
-				new Vector(event.offsetX, event.offsetY),
-				new Quadrilateral(undefined, new Vector(event.offsetX, event.offsetY)),
-				currentLayer.id,
-				style,
-			),
-			{
-				userAddress: $userAddress,
-			},
-		)
 	}
 
 	function loop() {
@@ -92,11 +65,18 @@
 	}
 
 	onMount(async () => {
-		await viewRepo.load($page.params.id)
 		await ecs.stateFromStorage($page.params.id)
 
 		currentProject = await viewRepo.load($page.params.id)
-		currentProject.subscribe_to_events(currentProject.id!)
+
+		query.subscribe(
+			{
+				id: $page.params.id,
+			},
+			(projects) => {
+				currentProject = projects[0]
+			},
+		)
 
 		if (currentProject?.id && !canvas) {
 			console.error("Could not find canvas element")
