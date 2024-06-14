@@ -6,12 +6,6 @@ import {
 	JoinEvent,
 	LeaveCommand,
 	LeaveEvent,
-	StartDrawingCommand,
-	StartLineEvent,
-	StartQuadrilateralEvent,
-	EndDrawingCommand,
-	EndLineEvent,
-	EndQuadrilateralEvent,
 	NewLayerCommand,
 	NewLayerEvent,
 	JoinCommand,
@@ -19,7 +13,6 @@ import {
 	NewProjectCommand,
 	SetLayerNameEvent,
 } from "$lib/types/commands-events"
-import { Line, Quadrilateral } from "$lib/ecs/components/drawings"
 
 export class ArtistAggregator extends Aggregate<ProjectEvents, ProjectCommands> {
 	constructor() {
@@ -40,38 +33,14 @@ export class ArtistAggregator extends Aggregate<ProjectEvents, ProjectCommands> 
 			.with(P.instanceOf(LeaveCommand), () => (
 				[new LeaveEvent(metadata.userAddress)]
 			))
-			.with(P.instanceOf(NewProjectCommand), (command) => {
+			.with(P.instanceOf(NewProjectCommand), (command: NewProjectCommand) => {
 				return [new NewProjectEvent(command.name, command.id)]
-			})
-			.with(P.instanceOf(StartDrawingCommand), (command: StartDrawingCommand) => {
-				return match(command.type)
-					.with(P.instanceOf(Line), () => {
-						return [new StartLineEvent(command.point, command.style)]
-					})
-					.with(P.instanceOf(Quadrilateral), () => {
-						return [new StartQuadrilateralEvent(command.point, command.style)]
-					})
-					.otherwise(() => {
-						throw new AggregateError("Unknown draw command: " + command)
-					})
 			})
 			.with(P.instanceOf(NewLayerCommand), (command: NewLayerCommand) => {
 				return [
-					new NewLayerEvent(command.id),
-					new SetLayerNameEvent(command.id, command.name),
+					new NewLayerEvent(command.layerId),
+					new SetLayerNameEvent(command.layerId, command.name),
 				]
-			})
-			.with(P.instanceOf(EndDrawingCommand), (command: EndDrawingCommand) => {
-				return match(command.type)
-					.with(P.instanceOf(Line), () => {
-						return [new EndLineEvent(command.point, command.style)]
-					})
-					.with(P.instanceOf(Quadrilateral), () => {
-						return [new EndQuadrilateralEvent(command.point, command.style)]
-					})
-					.otherwise(() => {
-						throw new AggregateError("Unknown draw command: " + command)
-					})
 			})
 			.otherwise(() => {
 				console.error("Unknown command", command)

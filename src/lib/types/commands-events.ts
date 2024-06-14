@@ -41,63 +41,22 @@ class NewProjectCommand {
 }
 
 class NewLayerCommand {
-	id: string
+	layerId: string
 	name: string
 
 	constructor(name: string) {
-		this.id = crypto.randomUUID()
+		this.layerId = crypto.randomUUID()
 		this.name = name
 	}
 }
 
 class SetLayerNameCommand {
-	id: string
+	layerId: string
 	name: string
 
-	constructor(id: string, name: string) {
-		this.id = id
+	constructor(layerId: string, name: string) {
+		this.layerId = layerId
 		this.name = name
-	}
-}
-
-class DrawingCommandBase {
-	point: Vector
-	type: Drawable
-	style: DrawableStyles
-	layer: NewLayerEvent
-
-	constructor(
-		point: Vector,
-		type: Drawable,
-		layer: NewLayerEvent,
-		styles: DrawableStyles = new DrawableStyles(),
-	) {
-		this.point = point
-		this.type = type
-		this.style = styles
-		this.layer = layer
-	}
-}
-
-class StartDrawingCommand extends DrawingCommandBase {
-	constructor(
-		point: Vector,
-		type: Drawable,
-		layer: NewLayerEvent,
-		styles: DrawableStyles = new DrawableStyles(),
-	) {
-		super(point, type, layer, styles)
-	}
-}
-
-class EndDrawingCommand extends DrawingCommandBase {
-	constructor(
-		point: Vector,
-		type: Drawable,
-		layer: NewLayerEvent,
-		styles: DrawableStyles = new DrawableStyles(),
-	) {
-		super(point, type, layer, styles)
 	}
 }
 
@@ -112,8 +71,6 @@ class DeleteLayerCommand {
 type ProjectCommands =
 	| JoinCommand
 	| LeaveCommand
-	| StartDrawingCommand
-	| EndDrawingCommand
 	| NewLayerCommand
 	| InviteCommand
 	| SetLayerNameCommand
@@ -171,57 +128,13 @@ class NewLayerEvent extends EventBase {
 }
 
 class SetLayerNameEvent extends EventBase {
-	id: string
+	layerId: string
 	name: string
 
-	constructor(id: string, name: string) {
+	constructor(layerId: string, name: string) {
 		super("1.0.0")
-		this.id = id
+		this.layerId = layerId
 		this.name = name
-	}
-}
-
-class DestroyArtistsArt extends EventBase {
-	userId: string
-
-	constructor(userId: string) {
-		super("1.0.0")
-		this.userId = userId
-	}
-}
-
-class DrawingEvent extends EventBase {
-	point: Vector
-	styles: DrawableStyles
-
-	constructor(point: Vector, styles: DrawableStyles) {
-		super("1.0.0")
-		this.point = point
-		this.styles = styles
-	}
-}
-
-class StartLineEvent extends DrawingEvent {
-	constructor(point: Vector, styles: DrawableStyles) {
-		super(point, styles)
-	}
-}
-
-class EndLineEvent extends DrawingEvent {
-	constructor(point: Vector, styles: DrawableStyles) {
-		super(point, styles)
-	}
-}
-
-class StartQuadrilateralEvent extends DrawingEvent {
-	constructor(point: Vector, styles: DrawableStyles) {
-		super(point, styles)
-	}
-}
-
-class EndQuadrilateralEvent extends DrawingEvent {
-	constructor(point: Vector, styles: DrawableStyles) {
-		super(point, styles)
 	}
 }
 
@@ -246,14 +159,9 @@ class DeleteLayerEvent extends EventBase {
 type ProjectEvents =
 	| JoinEvent
 	| LeaveEvent
-	| StartLineEvent
-	| EndLineEvent
-	| DestroyArtistsArt
 	| NewLayerEvent
 	| SetLayerNameEvent
 	| DeleteLayerEvent
-	| StartQuadrilateralEvent
-	| EndQuadrilateralEvent
 	| NewProjectEvent
 	| InviteEvent
 
@@ -275,23 +183,7 @@ function persistableEventToProjectEvents(event: PersistableEvent<ProjectEvents>)
 		)
 		.with({ eventType: "SetLayerNameEvent" }, () => {
 			const pEvent = event as PersistableEvent<SetLayerNameEvent>
-			return new SetLayerNameEvent(pEvent.payload.id, pEvent.payload.name)
-		})
-		.with({ eventType: "StartLineEvent" }, () => {
-			const pEvent = event as PersistableEvent<StartLineEvent>
-			return new StartLineEvent(pEvent.payload.point, pEvent.payload.styles)
-		})
-		.with({ eventType: "EndLineEvent" }, () => {
-			const pEvent = event as PersistableEvent<EndLineEvent>
-			return new EndLineEvent(pEvent.payload.point, pEvent.payload.styles)
-		})
-		.with({ eventType: "StartQuadrilateralEvent" }, () => {
-			const pEvent = event as PersistableEvent<EndLineEvent>
-			return new StartQuadrilateralEvent(pEvent.payload.point, pEvent.payload.styles)
-		})
-		.with({ eventType: "EndQuadrilateralEvent" }, () => {
-			const pEvent = event as PersistableEvent<EndLineEvent>
-			return new EndQuadrilateralEvent(pEvent.payload.point, pEvent.payload.styles)
+			return new SetLayerNameEvent(pEvent.payload.layerId, pEvent.payload.name)
 		})
 		.with({ eventType: "InviteEvent" }, () => {
 			const pEvent = event as PersistableEvent<InviteEvent>
@@ -315,19 +207,10 @@ export {
 	JoinEvent,
 	LeaveEvent,
 	NewLayerEvent,
-	StartLineEvent,
-	EndLineEvent,
-	StartQuadrilateralEvent,
-	EndQuadrilateralEvent,
-	DrawingCommandBase,
-	StartDrawingCommand,
-	EndDrawingCommand,
 	type ProjectEvents,
 	type ProjectCommands,
 	persistableEventsToProjectEvents,
 	persistableEventToProjectEvents,
-	DestroyArtistsArt,
-	DrawingEvent,
 	NewProjectCommand,
 	NewProjectEvent,
 	InviteCommand,

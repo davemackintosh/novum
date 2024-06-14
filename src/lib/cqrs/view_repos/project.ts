@@ -1,11 +1,11 @@
 import { ViewRepository, type PersistableEvent } from ".."
 import { ProjectView } from "../views/project"
-import { persistableEventToProjectEvents, type DrawingEvents } from "$lib/types/commands-events"
+import { persistableEventToProjectEvents, type ProjectEvents } from "$lib/types/commands-events"
 import { dbInstance } from "$lib/rxdb/database"
 
-export class ProjectViewRepo extends ViewRepository<DrawingEvents, ProjectView> {
+export class ProjectViewRepo extends ViewRepository<ProjectEvents, ProjectView> {
 	constructor() {
-		const view = new ProjectView("new project")
+		const view = new ProjectView()
 		super("ProjectView", view)
 	}
 
@@ -19,16 +19,21 @@ export class ProjectViewRepo extends ViewRepository<DrawingEvents, ProjectView> 
 		})
 	}
 
-	async handle_event(event: DrawingEvents) {
+	async handle_event(event: ProjectEvents) {
 		this.view.handle_event(event)
 	}
 
 
 	async load(aggregateId: string): Promise<ProjectView> {
-		const events: PersistableEvent<DrawingEvents>[] = await dbInstance.events.find({
+		const events: PersistableEvent<ProjectEvents>[] = await dbInstance.events.find({
 			selector: {
 				aggregateId,
-			}
+			},
+			sort: [
+				{
+					sequence: "asc"
+				}
+			]
 		}).exec()
 
 		console.info("Loaded events from storage", events)
