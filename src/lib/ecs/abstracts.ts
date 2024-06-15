@@ -1,13 +1,11 @@
 import { Entity } from "$lib/ecs/entity"
 
-abstract class IComponent {
-	constructor() {}
+interface IComponent {
 }
 
-abstract class System {
-	abstract update(entity: Entity): void
-
-	abstract accepts(subscription: IComponent): boolean
+interface System {
+	update(entity: Entity): void
+	accepts(component: IComponent): boolean
 }
 
-export { IComponent, System }
+export { type IComponent, type System }

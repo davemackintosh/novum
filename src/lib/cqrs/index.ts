@@ -123,9 +123,6 @@ class CQRS<A extends Aggregate<Events, ProjectCommands>, Events extends ProjectE
 		await this.eventRepository.commit(persistableEvents)
 
 		for (const event of events) {
-			// In a real world CQRS implementation, this would be triggered by a message queue,
-			// or a dynamostream, postgres TRIGGER, etc. Keeping it simple for now though for
-			// interview purposes.
 			await this.viewRepository.handle_event(event)
 			await this.viewRepository.commit()
 		}

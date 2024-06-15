@@ -1,6 +1,6 @@
 import type { IComponent, System } from "./abstracts"
 import { Entity } from "./entity"
-import { persistableEventsToEntities } from "./utils"
+import { entitiesFromPersistableEvents } from "./utils"
 import { dbInstance } from "$lib/rxdb/database"
 
 // A basic ECS for drawing on a canvas across multiple users.
@@ -14,6 +14,7 @@ export class ECS {
 	}
 
 	registerSystem(system: System): void {
+		console.info("Registered system", system)
 		this.registeredSystems.push(system)
 	}
 
@@ -47,7 +48,7 @@ export class ECS {
 				aggregateId,
 			}
 		}).exec()
-		const newEntities = persistableEventsToEntities(storedEvents)
+		const newEntities = entitiesFromPersistableEvents(storedEvents)
 
 		for (const newEntity of newEntities) {
 			this.addEntity(newEntity)

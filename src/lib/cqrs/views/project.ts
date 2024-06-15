@@ -3,6 +3,7 @@ import { View } from "$lib/cqrs"
 import {
 	JoinEvent,
 	LeaveEvent,
+	NewLayerCommand,
 	NewLayerEvent,
 	NewProjectEvent,
 	SetLayerNameEvent,
@@ -16,6 +17,10 @@ class Layer {
 	constructor(id: string, name?: string) {
 		this.id = id
 		this.name = name
+	}
+
+	static fromCommand(command: NewLayerCommand): Layer {
+		return new Layer(command.layerId, command.name)
 	}
 }
 
@@ -32,9 +37,6 @@ class ProjectView extends View {
 		this.name = name
 		this.layers = []
 		this.members = []
-
-		if (id)
-			this.subscribe_to_events(id)
 	}
 
 	public handle_event(event: ProjectEvents): ProjectView {

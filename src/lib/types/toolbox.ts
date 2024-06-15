@@ -1,3 +1,7 @@
+import type { IComponent, System } from "$lib/ecs/abstracts"
+import type { Vector } from "$lib/ecs/components/drawings"
+import type { Entity } from "$lib/ecs/entity"
+
 enum ToolboxTool {
 	RectangleSelection,
 	Pencil,
@@ -11,24 +15,34 @@ class ToolboxToolBase {
 	type?: ToolboxTool
 	name?: string
 	icon?: string
-	isSingleStrokeTool?: boolean
 	description?: string
 	tutorial?: string
 
 	constructor() {
-		this.isSingleStrokeTool = true
 	}
 }
 
-class RectangleSelection extends ToolboxToolBase {
-	constructor() {
+class RectangleSelection extends ToolboxToolBase implements System {
+	start: Vector
+	end?: Vector
+
+	constructor(start: Vector) {
 		super()
 		this.type = ToolboxTool.RectangleSelection
 		this.name = "Rectangle Selection"
 		this.icon = "rectangle"
 		this.description = "Select a rectangle on the canvas."
 		this.tutorial = "Click and drag to create a rectangle."
-		this.isSingleStrokeTool = true
+
+		this.start = start
+	}
+
+	update(entity: Entity): void {
+
+	}
+
+	accepts(component: IComponent): boolean {
+		throw new Error("Method not implemented.")
 	}
 }
 

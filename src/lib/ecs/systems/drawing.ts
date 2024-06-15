@@ -1,13 +1,12 @@
 import { P, match } from "ts-pattern"
-import { IComponent, System } from "../abstracts"
+import type { IComponent, System } from "../abstracts"
 import { QuadrilateralComponent } from "../components/quadrilateral"
 import { Entity } from "$lib/ecs/entity"
 
-export class DrawingSystem extends System {
+export class DrawingSystem implements System {
 	private readonly context: CanvasRenderingContext2D | null = null
 
 	constructor(context: CanvasRenderingContext2D | null) {
-		super()
 		if (context === null) {
 			console.warn("No context provided to DrawingSystem")
 			return

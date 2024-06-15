@@ -89,19 +89,23 @@ abstract class EventBase {
 
 class JoinEvent extends EventBase {
 	userAddress: string
+	projectId: string
 
-	constructor(userAddress: string) {
+	constructor(userAddress: string, projectId: string) {
 		super("1.0.0")
 		this.userAddress = userAddress
+		this.projectId = projectId
 	}
 }
 
 class LeaveEvent extends EventBase {
 	userAddress: string
+	projectId: string
 
-	constructor(userAddress: string) {
+	constructor(userAddress: string, projectId: string) {
 		super("1.0.0")
 		this.userAddress = userAddress
+		this.projectId = projectId
 	}
 }
 

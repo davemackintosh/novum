@@ -14,7 +14,6 @@
 
 	let canvas: HTMLCanvasElement | null
 	let currentLayer: Layer | null = null
-	let render: boolean = true
 	let currentProject: ProjectView | null = null
 
 	const ecs = new ECS()
@@ -26,20 +25,18 @@
 		if (!currentProject) {
 			throw new ReferenceError("no current project")
 		}
-		await cqrs.dispatchWithMetadata(
-			currentProject!.id!,
-			new NewLayerCommand("new layer " + (currentProject!.layers.length + 1)),
-			{
-				userAddress: $userAddress,
-			},
-		)
+		const newLayer = new NewLayerCommand("new layer " + (currentProject!.layers.length + 1))
+		await cqrs.dispatchWithMetadata(currentProject!.id!, newLayer, {
+			userAddress: $userAddress,
+		})
+		currentLayer = Layer.fromCommand(newLayer)
 	}
 
-	function selectLayer(selectedLayerentity: Layer) {
-		currentLayer = selectedLayerentity
+	function selectLayer(selectedLayer: Layer) {
+		currentLayer = selectedLayer
 	}
 
-	async function beginDrawing(event: MouseEvent) {
+	async function beginStroke(event: PointerEvent | TouchEvent) {
 		if (!currentProject) {
 			throw new ReferenceError("no current project")
 		}
@@ -47,9 +44,11 @@
 			console.warn("Layer not selected", event)
 			return
 		}
+
+		console.log(event)
 	}
 
-	async function endDrawing(event: MouseEvent) {
+	async function endStroke(event: PointerEvent | TouchEvent) {
 		if (!currentProject) {
 			throw new ReferenceError("no current project")
 		}
@@ -57,6 +56,8 @@
 			console.warn("Layer not selected", event)
 			return
 		}
+
+		console.log(event)
 	}
 
 	function loop() {
@@ -77,23 +78,17 @@
 				currentProject = projects[0]
 			},
 		)
-
-		if (currentProject?.id && !canvas) {
-			console.error("Could not find canvas element")
-			return
-		}
-
-		if (canvas)
-			match(canvas.getContext("2d"))
-				.with(P.nonNullable, (ctx) => {
-					console.log("Got 2d context from canvas")
-					ecs.registerSystem(new DrawingSystem(ctx))
-					if (render) loop()
-				})
-				.otherwise(() => {
-					console.error("Could not get 2d context from canvas")
-				})
 	})
+
+	$: match(canvas?.getContext("2d"))
+		.with(P.nonNullable, (ctx) => {
+			console.log("Got 2d context from canvas")
+			ecs.registerSystem(new DrawingSystem(ctx))
+			loop()
+		})
+		.otherwise(() => {
+			console.error("Could not get 2d context from canvas")
+		})
 </script>
 
 <div class="toolbox-canvas">
@@ -116,7 +111,13 @@
 				</ol>
 			</div>
 		</aside>
-		<canvas bind:this={canvas} on:mousedown={beginDrawing} on:mouseup={endDrawing} />
+		<canvas
+			bind:this={canvas}
+			on:touchstart={beginStroke}
+			on:touchend={endStroke}
+			on:pointerdown={beginStroke}
+			on:pointerup={endStroke}
+		/>
 	{/if}
 </div>
 
