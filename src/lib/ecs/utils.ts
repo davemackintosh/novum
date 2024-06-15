@@ -3,7 +3,10 @@ import { Entity } from "$lib/ecs/entity"
 import { LayerComponent } from "$lib/ecs/components/layer"
 import type { PersistableEvent, ProjectEvents } from "$lib/cqrs"
 
-export function entitiesFromPersistableEvents(events: PersistableEvent<ProjectEvents>[]): Entity[] {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Constructor<T> = new (...args: any[]) => T;
+
+function entitiesFromPersistableEvents(events: PersistableEvent<ProjectEvents>[]): Entity[] {
 	const entities: Entity[] = events.map((event) => {
 		const entity = new Entity(event.aggregateId)
 
@@ -21,3 +24,5 @@ export function entitiesFromPersistableEvents(events: PersistableEvent<ProjectEv
 
 	return entities
 }
+
+export { entitiesFromPersistableEvents, type Constructor }

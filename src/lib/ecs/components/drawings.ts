@@ -1,11 +1,10 @@
-import { IComponent } from "$lib/ecs/abstracts"
+import { type IComponent } from "$lib/ecs/abstracts"
 
-class Drawable extends IComponent {
+class Drawable implements IComponent {
 	transformOrigin: Vector
 	styles: DrawableStyles
 
 	constructor() {
-		super()
 		this.transformOrigin = new Vector(0, 0)
 		this.styles = new DrawableStyles()
 	}

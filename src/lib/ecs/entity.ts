@@ -1,4 +1,5 @@
 import type { IComponent } from "./abstracts"
+import type { Constructor } from "./utils"
 
 export class Entity {
 	public readonly id: string
@@ -13,8 +14,7 @@ export class Entity {
 		return this.components
 	}
 
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	getComponent<T>(type: new (...args: any[]) => T): T | undefined {
+	getComponent<T>(type: Constructor<T>): T | undefined {
 		return this.components.find((c) => c instanceof type.constructor) as T | undefined
 	}
 
