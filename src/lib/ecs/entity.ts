@@ -15,7 +15,7 @@ export class Entity {
 	}
 
 	getComponent<T>(type: Constructor<T>): T | undefined {
-		return this.components.find((c) => c instanceof type.constructor) as T | undefined
+		return this.components.find((c) => c instanceof type) as T | undefined
 	}
 
 	hasComponent<T>(component: new (...args: unknown[]) => T): boolean {

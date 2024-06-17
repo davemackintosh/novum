@@ -5,26 +5,32 @@ import type { PersistableEvent } from "$lib/cqrs"
 // Commands result in events that ultimately changes what anyone will and can see.
 
 class JoinCommand {
+	projectId: string
 	userAddress: string
 
-	constructor(userAddress: string) {
+	constructor(userAddress: string, projectId: string) {
 		this.userAddress = userAddress
+		this.projectId = projectId
 	}
 }
 
 class InviteCommand {
+	projectId: string
 	inviteUserAddresses: string[]
 
-	constructor(inviteUserAddresses: string[]) {
+	constructor(inviteUserAddresses: string[], projectId: string) {
 		this.inviteUserAddresses = inviteUserAddresses
+		this.projectId = projectId
 	}
 }
 
 class LeaveCommand {
+	projectId: string
 	userAddress: string
 
-	constructor(userId: string) {
+	constructor(userId: string, projectId: string) {
 		this.userAddress = userId
+		this.projectId = projectId
 	}
 }
 

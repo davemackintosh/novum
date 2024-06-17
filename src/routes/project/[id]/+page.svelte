@@ -3,7 +3,7 @@
 	import { P, match } from "ts-pattern"
 	import { userAddress } from "$lib/stores/user"
 	import { CQRS } from "$lib/cqrs"
-	import { ArtistAggregator } from "$lib/cqrs/aggregates/project"
+	import { ProjectAggregator } from "$lib/cqrs/aggregates/project"
 	import { ECS } from "$lib/ecs"
 	import { NewLayerCommand } from "$lib/types/commands-events"
 	import { ProjectViewRepo } from "$lib/cqrs/view_repos/project"
@@ -11,15 +11,40 @@
 	import { ProjectView, Layer } from "$lib/cqrs/views/project"
 	import { page } from "$app/stores"
 	import { ProjectQuery } from "$lib/cqrs/queries/project"
+	import { RootCanvasPointComponent } from "$lib/ecs/components/root-canvas-point"
+	import { Vector } from "$lib/ecs/components/drawings"
+	import { PointerTool } from "$lib/types/toolbox"
+	import { RasterizedImageComponent } from "$lib/ecs/components/rasterized-image"
+	import { CanvasPointComponent } from "$lib/ecs/components/canvas-point"
+	import { CanvasPointsSystem } from "$lib/ecs/systems/canvas-points"
 
 	let canvas: HTMLCanvasElement | null
 	let currentLayer: Layer | null = null
 	let currentProject: ProjectView | null = null
+	let currentToolSystem = new PointerTool()
 
 	const ecs = new ECS()
 	const viewRepo = new ProjectViewRepo()
 	const query = new ProjectQuery(viewRepo)
-	const cqrs = new CQRS(new ArtistAggregator(), viewRepo)
+	const cqrs = new CQRS(new ProjectAggregator(ecs), viewRepo)
+
+	// This point gets updated by the canvas point system and updates all other points in the scene.
+	const canvasPoint = new RootCanvasPointComponent(0, 0)
+	const rootEntity = ecs.createEntity()
+	rootEntity.addComponent(canvasPoint)
+	ecs.addEntity(rootEntity)
+
+	const cursor = ecs.createEntity()
+	const cursorPosition = new CanvasPointComponent(canvasPoint.point.x, canvasPoint.point.y)
+	cursor.addComponent(
+		new RasterizedImageComponent(
+			"https://static-00.iconduck.com/assets.00/cursor-icon-1665x2048-wxo7lnt6.png",
+			8,
+			8,
+		),
+	)
+	cursor.addComponent(cursorPosition)
+	ecs.addEntity(cursor)
 
 	async function createNewLayer() {
 		if (!currentProject) {
@@ -48,6 +73,23 @@
 		console.log(event)
 	}
 
+	async function updateStroke(event: PointerEvent | TouchEvent) {
+		if (!currentProject) {
+			throw new ReferenceError("no current project")
+		}
+		if (!currentLayer) {
+			console.warn("Layer not selected", event)
+			return
+		}
+
+		// Update the canvas point x y and pressure from the event.
+		if (event instanceof PointerEvent) {
+			canvasPoint.point = new Vector(event.layerX, event.layerY)
+		} else if (event instanceof TouchEvent) {
+			canvasPoint.point = new Vector(event.touches[0].clientX, event.touches[0].clientY)
+		}
+	}
+
 	async function endStroke(event: PointerEvent | TouchEvent) {
 		if (!currentProject) {
 			throw new ReferenceError("no current project")
@@ -68,7 +110,11 @@
 	onMount(async () => {
 		await ecs.stateFromStorage($page.params.id)
 
+		ecs.registerSystem(new CanvasPointsSystem())
+		ecs.registerSystem(currentToolSystem)
+
 		currentProject = await viewRepo.load($page.params.id)
+		currentLayer = currentProject.layers[0]
 
 		query.subscribe(
 			{
@@ -83,7 +129,7 @@
 	$: match(canvas?.getContext("2d"))
 		.with(P.nonNullable, (ctx) => {
 			console.log("Got 2d context from canvas")
-			ecs.registerSystem(new DrawingSystem(ctx))
+			ecs.registerSystem(new DrawingSystem(ctx, canvas))
 			loop()
 		})
 		.otherwise(() => {
@@ -114,8 +160,10 @@
 		<canvas
 			bind:this={canvas}
 			on:touchstart={beginStroke}
+			on:touchmove={updateStroke}
 			on:touchend={endStroke}
 			on:pointerdown={beginStroke}
+			on:pointermove={updateStroke}
 			on:pointerup={endStroke}
 		/>
 	{/if}

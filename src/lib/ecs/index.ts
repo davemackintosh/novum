@@ -18,11 +18,8 @@ export class ECS {
 		this.registeredSystems.push(system)
 	}
 
-	createEntity(aggregateId?: string): Entity {
-		const entityId = aggregateId || crypto.randomUUID()
-		// In the real world, this would be problematic as entities are likely to be created in
-		// quick succession which would result in the same entity being created multiple times or
-		// consuming the same "id".
+	createEntity(): Entity {
+		const entityId = crypto.randomUUID()
 		return new Entity(entityId)
 	}
 
