@@ -192,6 +192,7 @@
 		flex-grow: 0;
 		border-right: 1px solid black;
 		padding: 1em;
+		z-index: 1;
 	}
 
 	canvas {
@@ -200,6 +201,7 @@
 		left: 0;
 		right: 0;
 		bottom: 0;
+		z-index: 0;
 	}
 
 	ol {

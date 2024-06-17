@@ -6,11 +6,13 @@ import { addRxPlugin, createRxDatabase, type RxDatabase } from "rxdb"
 import { getRxStorageDexie } from "rxdb/plugins/storage-dexie"
 import { Events, type EventsCollection } from "./collections/events"
 import { Projects, type ProjectsCollection } from "./collections/projects"
+import { Config, type ConfigCollection } from "./collections/config"
 import { browser } from "$app/environment"
 
 type DatabaseType = {
 	events: EventsCollection
 	projects: ProjectsCollection
+	config: ConfigCollection
 }
 
 /**
@@ -47,6 +49,9 @@ async function getDatabase(): Promise<RxDatabase<DatabaseType>> {
 		projects: {
 			schema: Projects,
 		},
+		config: {
+			schema: Config
+		}
 	})
 
 	await db.waitForLeadership()

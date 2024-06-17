@@ -1,8 +1,14 @@
 <script lang="ts">
 	import { userAddress } from "$lib/stores/user"
+	import { appConfig } from "$lib/stores/app-config"
+
+	const app = appConfig
 </script>
 
-<div class="app">
+<div
+	class="app"
+	style="background-color: {$app.theme?.background}; color: {$app.theme?.foreground};"
+>
 	<header>
 		<p>
 			{$userAddress}
@@ -11,6 +17,7 @@
 				work and invites.
 			</small>
 		</p>
+		<button type="button" on:click={() => $app.toggleMode()}> </button>
 	</header>
 	<main>
 		<slot />
@@ -26,8 +33,8 @@
 
 	header {
 		flex: 1;
-		border-bottom: 1px solid black;
 		padding: 1em;
+		z-index: 1;
 	}
 
 	main {
