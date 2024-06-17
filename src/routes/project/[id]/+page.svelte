@@ -107,6 +107,13 @@
 		requestAnimationFrame(loop)
 	}
 
+	function resizeCanvas() {
+		if (canvas) {
+			canvas.width = window.innerWidth
+			canvas.height = window.innerHeight
+		}
+	}
+
 	onMount(async () => {
 		await ecs.stateFromStorage($page.params.id)
 
@@ -115,6 +122,8 @@
 
 		currentProject = await viewRepo.load($page.params.id)
 		currentLayer = currentProject.layers[0]
+
+		resizeCanvas()
 
 		query.subscribe(
 			{
@@ -126,6 +135,7 @@
 		)
 	})
 
+	$: if (canvas) resizeCanvas()
 	$: match(canvas?.getContext("2d"))
 		.with(P.nonNullable, (ctx) => {
 			console.log("Got 2d context from canvas")
@@ -137,6 +147,7 @@
 		})
 </script>
 
+<svelte:window on:resize={resizeCanvas} />
 <div class="toolbox-canvas">
 	{#if !currentProject}
 		<p>Loading...</p>
@@ -184,8 +195,11 @@
 	}
 
 	canvas {
-		width: 100%;
-		height: 100%;
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
 	}
 
 	ol {
