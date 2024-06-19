@@ -17,6 +17,7 @@
 	import { RasterizedImageComponent } from "$lib/ecs/components/rasterized-image"
 	import { CanvasPointComponent } from "$lib/ecs/components/canvas-point"
 	import { CanvasPointsSystem } from "$lib/ecs/systems/canvas-points"
+	import { appTheme } from "$lib/stores/app-config"
 
 	let canvas: HTMLCanvasElement | null
 	let currentLayer: Layer | null = null
@@ -28,6 +29,8 @@
 	const query = new ProjectQuery(viewRepo)
 	const cqrs = new CQRS(new ProjectAggregator(ecs), viewRepo)
 
+	const themeBundle = appTheme()
+
 	// This point gets updated by the canvas point system and updates all other points in the scene.
 	const canvasPoint = new RootCanvasPointComponent(0, 0)
 	const rootEntity = ecs.createEntity()
@@ -36,13 +39,7 @@
 
 	const cursor = ecs.createEntity()
 	const cursorPosition = new CanvasPointComponent(canvasPoint.point.x, canvasPoint.point.y)
-	cursor.addComponent(
-		new RasterizedImageComponent(
-			"https://static-00.iconduck.com/assets.00/cursor-icon-1665x2048-wxo7lnt6.png",
-			8,
-			8,
-		),
-	)
+	cursor.addComponent(new RasterizedImageComponent($themeBundle.getThemeConfig().cursor, 8, 8))
 	cursor.addComponent(cursorPosition)
 	ecs.addEntity(cursor)
 
@@ -202,6 +199,7 @@
 		right: 0;
 		bottom: 0;
 		z-index: 0;
+		cursor: none;
 	}
 
 	ol {

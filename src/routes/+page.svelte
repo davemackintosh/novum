@@ -3,16 +3,18 @@
 	import { userAddress } from "$lib/stores/user"
 	import Projects from "$lib/components/projects.svelte"
 	import { CQRS } from "$lib/cqrs"
-	import { ArtistAggregator } from "$lib/cqrs/aggregates/project"
+	import { ProjectAggregator } from "$lib/cqrs/aggregates/project"
 	import { ProjectViewRepo } from "$lib/cqrs/view_repos/project"
 	import { ProjectQuery } from "$lib/cqrs/queries/project"
 	import type { ProjectView } from "$lib/cqrs/views/project"
+	import { ECS } from "$lib/ecs"
 
 	let error: string | null = null
 	let projects: ProjectView[] = []
 
+	const ecs = new ECS()
 	const viewRepo = new ProjectViewRepo()
-	const cqrs = new CQRS(new ArtistAggregator(), viewRepo)
+	const cqrs = new CQRS(new ProjectAggregator(ecs), viewRepo)
 	const query = new ProjectQuery(viewRepo)
 
 	onMount(async () => {

@@ -1,14 +1,19 @@
 <script lang="ts">
 	import { userAddress } from "$lib/stores/user"
-	import { appConfig } from "$lib/stores/app-config"
+	import { appTheme } from "$lib/stores/app-config"
+	import { dbInstance } from "$lib/rxdb/database"
 
-	const app = appConfig
+	const themeBundle = appTheme()
+
+	$: dbInstance.config.upsert({
+		bundleName: $themeBundle.bundleName,
+		currentThemeKey: $themeBundle.currentThemeKey,
+		themes: $themeBundle.themes,
+	})
+	$: theme = $themeBundle.getThemeConfig()
 </script>
 
-<div
-	class="app"
-	style="background-color: {$app.theme?.background}; color: {$app.theme?.foreground};"
->
+<div class="app" style="background-color: {theme.background}; color: {theme.foreground};">
 	<header>
 		<p>
 			{$userAddress}
@@ -17,7 +22,13 @@
 				work and invites.
 			</small>
 		</p>
-		<button type="button" on:click={() => $app.toggleMode()}> </button>
+		<button
+			type="button"
+			on:click={() => {
+				themeBundle.setThemeKey($themeBundle.currentThemeKey === "light" ? "dark" : "light")
+			}}
+		>
+		</button>
 	</header>
 	<main>
 		<slot />

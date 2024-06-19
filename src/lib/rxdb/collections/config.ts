@@ -1,30 +1,44 @@
 import { type RxCollection, type RxJsonSchema } from "rxdb"
-import type { AppConfig } from "$lib/app-config"
+import { type PersistableThemeBundle } from "$lib/app-config"
 
-const Config: RxJsonSchema<AppConfig> = {
+const Config: RxJsonSchema<PersistableThemeBundle> = {
 	version: 0,
 	title: "projects",
 	description: "Application config.",
-	primaryKey: "id",
+	primaryKey: "bundleName",
 	type: "object",
 	keyCompression: true,
-	required: ["id", "themeLibrary", "themeMode"],
+	required: ["bundleName", "currentThemeKey", "themes"],
 	properties: {
-		id: {
+		bundleName: {
 			type: "string",
-			maxLength: 50,
+			maxLength: 255,
 		},
-		themeLibrary: {
+		currentThemeKey: {
+			type: "string",
+		},
+		themes: {
 			type: "object",
-		},
-		themeMode: {
-			type: "string",
-			enum: ["Light", "Dark"],
+			additionalProperties: {
+				type: "object",
+				required: ["background", "foreground"],
+				properties: {
+					background: {
+						type: "string",
+					},
+					foreground: {
+						type: "string",
+					},
+					cursor: {
+						type: "string",
+					}
+				},
+			},
 		}
 	},
 } as const
 
-type ConfigCollection = RxCollection<AppConfig>
+type ConfigCollection = RxCollection<PersistableThemeBundle>
 
 export { Config, type ConfigCollection }
 
