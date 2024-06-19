@@ -1,4 +1,4 @@
-import type { DrawingEvents } from "$lib/cqrs";
+import type { ProjectEvents } from "$lib/cqrs";
 
 class WebRTCConnection {
 	private peerConnection: RTCPeerConnection;
@@ -74,7 +74,7 @@ class WebRTCConnection {
 		this.saveSignalingData(this.localUUID, offer);
 	}
 
-	public sendJsonPayload(payload: DrawingEvents) {
+	public sendJsonPayload(payload: ProjectEvents) {
 		if (this.dataChannel && this.dataChannel.readyState === 'open') {
 			this.dataChannel.send(JSON.stringify(payload));
 			console.log('Sent:', payload);

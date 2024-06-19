@@ -31,8 +31,6 @@ export class DrawingSystem implements System {
 			return
 		}
 
-		this.context?.clearRect(0, 0, this.canvas.width, this.canvas.height)
-
 		for (const component of entity.getComponents()) {
 			match(component)
 				.with(P.instanceOf(QuadrilateralComponent), (quad) => this.drawQuadrilateral(quad))

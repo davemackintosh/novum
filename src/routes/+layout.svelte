@@ -5,10 +5,13 @@
 
 	const themeBundle = appTheme()
 
+	console.log({
+		bundleName: $themeBundle.bundleName,
+		currentThemeKey: $themeBundle.currentThemeKey,
+	})
 	$: dbInstance.config.upsert({
 		bundleName: $themeBundle.bundleName,
 		currentThemeKey: $themeBundle.currentThemeKey,
-		themes: $themeBundle.themes,
 	})
 	$: theme = $themeBundle.getThemeConfig()
 </script>

@@ -8,7 +8,7 @@ const Config: RxJsonSchema<PersistableThemeBundle> = {
 	primaryKey: "bundleName",
 	type: "object",
 	keyCompression: true,
-	required: ["bundleName", "currentThemeKey", "themes"],
+	required: ["bundleName", "currentThemeKey"],
 	properties: {
 		bundleName: {
 			type: "string",
@@ -17,24 +17,6 @@ const Config: RxJsonSchema<PersistableThemeBundle> = {
 		currentThemeKey: {
 			type: "string",
 		},
-		themes: {
-			type: "object",
-			additionalProperties: {
-				type: "object",
-				required: ["background", "foreground"],
-				properties: {
-					background: {
-						type: "string",
-					},
-					foreground: {
-						type: "string",
-					},
-					cursor: {
-						type: "string",
-					}
-				},
-			},
-		}
 	},
 } as const
 

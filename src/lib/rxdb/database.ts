@@ -1,3 +1,4 @@
+import { RxDBMigrationSchemaPlugin } from "rxdb/plugins/migration-schema"
 import { wrappedValidateAjvStorage } from "rxdb/plugins/validate-ajv"
 import { wrappedKeyCompressionStorage } from "rxdb/plugins/key-compression"
 import { wrappedKeyEncryptionCryptoJsStorage } from "rxdb/plugins/encryption-crypto-js"
@@ -28,6 +29,7 @@ async function getDatabase(): Promise<RxDatabase<DatabaseType>> {
 		addRxPlugin(RxDBDevModePlugin)
 	}
 
+	addRxPlugin(RxDBMigrationSchemaPlugin);
 	addRxPlugin(RxDBLeaderElectionPlugin)
 
 	const db = await createRxDatabase<DatabaseType>({
@@ -50,7 +52,7 @@ async function getDatabase(): Promise<RxDatabase<DatabaseType>> {
 			schema: Projects,
 		},
 		config: {
-			schema: Config
+			schema: Config,
 		}
 	})
 
