@@ -19,6 +19,7 @@
 	import { CanvasPointsSystem } from "$lib/ecs/systems/canvas-points"
 	import { appTheme } from "$lib/stores/app-config"
 	import Toolbox from "$lib/components/toolbox.svelte"
+	import { PaintbrushComponent } from "$lib/ecs/components/paintbrush"
 
 	let canvas: HTMLCanvasElement | null
 	let currentLayer: Layer | null = null
@@ -43,6 +44,11 @@
 	cursor.addComponent(new RasterizedImageComponent($themeBundle.getThemeConfig().cursor, 8, 8))
 	cursor.addComponent(cursorPosition)
 	ecs.addEntity(cursor)
+
+	const paintbrushEntity = ecs.createEntity()
+	const paintbrushComponent = new PaintbrushComponent()
+	paintbrushEntity.addComponent(paintbrushComponent)
+	ecs.addEntity(paintbrushEntity)
 
 	async function createNewLayer() {
 		if (!currentProject) {
