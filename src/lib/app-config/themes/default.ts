@@ -19,7 +19,7 @@ export class DefaultTheme implements AppTheme {
 		}
 	}
 
-	private static DEFAULT_THEME_KEY = "dark"
+	private static DEFAULT_THEME_KEY = "light"
 
 	constructor(bundleName?: string, currentThemeKey?: string) {
 		this.bundleName = bundleName ?? "com.novum.norrsken-theme"

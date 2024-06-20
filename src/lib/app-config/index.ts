@@ -9,7 +9,6 @@ interface AppThemeProperties {
 interface PersistableThemeBundle {
 	readonly bundleName: string
 	currentThemeKey: string
-	readonly themes: Record<string, AppThemeProperties>
 }
 
 interface AppTheme extends PersistableThemeBundle {

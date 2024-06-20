@@ -18,6 +18,7 @@
 	import { CanvasPointComponent } from "$lib/ecs/components/canvas-point"
 	import { CanvasPointsSystem } from "$lib/ecs/systems/canvas-points"
 	import { appTheme } from "$lib/stores/app-config"
+	import Toolbox from "$lib/components/toolbox.svelte"
 
 	let canvas: HTMLCanvasElement | null
 	let currentLayer: Layer | null = null
@@ -164,6 +165,7 @@
 					{/each}
 				</ol>
 			</div>
+			<Toolbox />
 		</aside>
 		<canvas
 			bind:this={canvas}
@@ -199,7 +201,6 @@
 		right: 0;
 		bottom: 0;
 		z-index: 0;
-		cursor: none;
 	}
 
 	ol {
@@ -228,5 +229,10 @@
 
 	.layers button:hover {
 		cursor: pointer;
+	}
+
+	.project-meta {
+		display: flex;
+		flex-direction: row;
 	}
 </style>
