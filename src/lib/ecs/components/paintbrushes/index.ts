@@ -1,11 +1,30 @@
 import { match } from "ts-pattern"
-import type { Vector } from "../drawings"
+import { Vector } from "../drawings"
+
+interface PaintbrushStroke {
+	points: Vector[]
+	brush: PaintbrushInterface
+}
+
+interface PaintbrushStyles {
+	width: number
+	height: number
+	pressure: number
+	color: Vector
+	brushType: PaintbrushType
+
+	rotation?: number
+	dryness?: number
+	bristleDensity?: number
+}
 
 interface PaintbrushInterface {
-	width: number
-	color: Vector
-
-	paint(ctx: CanvasRenderingContext2D, point: Vector, lastPoint?: Vector): void
+	paint(
+		ctx: CanvasRenderingContext2D,
+		styles: PaintbrushStyles,
+		point: Vector,
+		lastPoint?: Vector,
+	): void
 }
 
 enum PaintbrushType {
@@ -13,35 +32,45 @@ enum PaintbrushType {
 	Fan,
 }
 
-class PaintbrushComponent implements PaintbrushInterface {
-	color: Vector
+class PaintbrushStylesComponent implements PaintbrushStyles {
 	width: number
-	dryness: number
+	height: number
+	pressure: number
+	color: Vector
 	brushType: PaintbrushType
-	brushWidth = 30
-	brushLength = 60
-	numBristles = 30
+	rotation?: number | undefined
+	dryness?: number | undefined
+	bristleDensity?: number | undefined
 
-	constructor(
-		width: number,
-		color: Vector,
-		brushType: PaintbrushType = PaintbrushType.Filbert,
-		dryness: number = 0.0,
-	) {
-		this.color = color
-		this.width = width
-		this.dryness = dryness
-		this.brushType = brushType
+	constructor(styles: PaintbrushStyles) {
+		this.width = styles.width
+		this.height = styles.height
+		this.pressure = styles.pressure
+		this.color = styles.color
+		this.brushType = styles.brushType
+		this.rotation = styles.rotation
+		this.dryness = styles.dryness
+		this.bristleDensity = styles.bristleDensity
 	}
+}
 
-	paint(ctx: CanvasRenderingContext2D, point: Vector, prevPoint?: Vector): void {
-		return match(this.brushType)
-			.with(PaintbrushType.Filbert, () => this.paintFilbertStroke(ctx, point, prevPoint))
-			.otherwise(() => this.paintFilbertStroke(ctx, point, prevPoint))
+class PaintbrushComponent implements PaintbrushInterface {
+	paint(
+		ctx: CanvasRenderingContext2D,
+		styles: PaintbrushStyles,
+		point: Vector,
+		prevPoint?: Vector,
+	): void {
+		return match(styles.brushType)
+			.with(PaintbrushType.Filbert, () =>
+				this.paintFilbertStroke(ctx, styles, point, prevPoint),
+			)
+			.otherwise(() => this.paintFilbertStroke(ctx, styles, point, prevPoint))
 	}
 
 	private paintFilbertStroke(
 		ctx: CanvasRenderingContext2D,
+		styles: PaintbrushStyles,
 		point: Vector,
 		prevPoint?: Vector,
 	): void {
@@ -58,9 +87,11 @@ class PaintbrushComponent implements PaintbrushInterface {
 		// Clear the brush path for smoother strokes
 		ctx.globalCompositeOperation = "source-over"
 
-		for (let i = 0; i < this.numBristles; i++) {
-			const offset = (Math.random() - 0.5) * this.brushWidth
-			const bristleLength = this.brushLength * (Math.random() * 0.5 + 0.5)
+		const numBristles = styles.bristleDensity ?? 75
+
+		for (let i = 0; i < numBristles; i++) {
+			const offset = (Math.random() - 0.5) * styles.width
+			const bristleLength = styles.height * (Math.random() * 0.5 + 0.5)
 
 			const brushXStart = lastX + Math.cos(perpendicularAngle) * offset
 			const brushYStart = lastY + Math.sin(perpendicularAngle) * offset
@@ -70,11 +101,18 @@ class PaintbrushComponent implements PaintbrushInterface {
 			ctx.beginPath()
 			ctx.moveTo(brushXStart, brushYStart)
 			ctx.lineTo(brushXEnd, brushYEnd)
-			ctx.strokeStyle = `rgba(0, 0, 0, ${Math.random() * 0.4 + 0.6})`
+			ctx.strokeStyle = styles.color.toRGBAString(styles.dryness ?? 1)
 			ctx.lineWidth = Math.random() * 2 + 1
 			ctx.stroke()
 		}
 	}
 }
 
-export { PaintbrushComponent, type PaintbrushInterface }
+export {
+	PaintbrushComponent,
+	PaintbrushStylesComponent,
+	PaintbrushType,
+	type PaintbrushInterface,
+	type PaintbrushStyles,
+	type PaintbrushStroke,
+}

@@ -1,4 +1,5 @@
 <script lang="ts" context="module">
+	import { createEventDispatcher } from "svelte"
 	export enum AvailableTools {
 		Pointer,
 		RectangleSelector,
@@ -10,37 +11,80 @@
 		icon: string
 		description: string
 	}
-</script>
 
-<script lang="ts">
-	const toolbelt: Record<AvailableTools, ToolDescriptor> = {
-		[AvailableTools.Pointer]: {
-			name: "Pointer",
-			icon: "/theme/cursor-dark.png",
-			description: "Pointer",
-		},
-		[AvailableTools.RectangleSelector]: {
-			name: "RectangleSelector",
-			icon: "/theme/cursor-dark.png",
-			description: "RectangleSelector",
-		},
-		[AvailableTools.Paintbrush]: {
-			name: "Paintbrush",
-			icon: "/theme/cursor-dark.png",
-			description: "Paintbrush",
-		},
+	export type ToolObject = {
+		type: AvailableTools
+		descriptor: ToolDescriptor
 	}
 </script>
 
-<ul class="toolbox">
-	{#each Object.values(toolbelt) as tool}
-		<li>
-			<button type="button" title={tool.name}>
-				<img src={tool.icon} alt={tool.description} width="16" height="16" />
-			</button>
-		</li>
-	{/each}
-</ul>
+<script lang="ts">
+	const toolbelt: ToolObject[] = [
+		{
+			type: AvailableTools.Pointer,
+			descriptor: {
+				name: "Pointer",
+				icon: "/theme/cursor-dark.png",
+				description: "Pointer",
+			},
+		},
+		{
+			type: AvailableTools.RectangleSelector,
+			descriptor: {
+				name: "RectangleSelector",
+				icon: "/theme/rectangle-selector.jpg",
+				description: "RectangleSelector",
+			},
+		},
+		{
+			type: AvailableTools.Paintbrush,
+			descriptor: {
+				name: "Paintbrush",
+				icon: "/theme/paint-brush.jpg",
+				description: "Paintbrush",
+			},
+		},
+	]
+
+	const dispatcher = createEventDispatcher()
+
+	function handleColorChange(color: string): void {
+		dispatcher("colorchange", color)
+	}
+
+	function handleToolChange(tool: ToolObject): void {
+		dispatcher("toolchange", tool)
+	}
+</script>
+
+<div class="toolbox">
+	<ul class="toolbox">
+		{#each toolbelt as tool}
+			<li>
+				<button
+					type="button"
+					title={tool.descriptor.name}
+					on:click={() => handleToolChange(tool)}
+				>
+					<img
+						src={tool.descriptor.icon}
+						alt={tool.descriptor.description}
+						width="16"
+						height="16"
+					/>
+				</button>
+			</li>
+		{/each}
+	</ul>
+	<div class="color-palette">
+		<label for="color-picker">Color:</label>
+		<input
+			type="color"
+			id="color-picker"
+			on:change={(e) => handleColorChange(e.currentTarget.value)}
+		/>
+	</div>
+</div>
 
 <style>
 	.toolbox {

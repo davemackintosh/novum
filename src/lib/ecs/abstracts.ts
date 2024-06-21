@@ -5,7 +5,7 @@ interface IComponent {}
 
 interface System {
 	update(entity: Entity): void
-	accepts(component: Constructor<IComponent>): boolean
+	accepts(component: Constructor<IComponent> | IComponent): boolean
 }
 
 export { type IComponent, type System }

@@ -41,7 +41,7 @@ export class ProjectAggregator extends Aggregate<ProjectEvents, ProjectCommands>
 			.with(P.instanceOf(NewProjectCommand), (command: NewProjectCommand) => {
 				// Spawn a new ecs entity with the layer component.
 				const entity = this.ecs.createEntity()
-				entity.addComponent(new LayerComponent())
+				entity.addComponent(new LayerComponent(`New Layer 1`))
 				this.ecs.addEntity(entity)
 				const defaultLayerId = crypto.randomUUID()
 				return [
@@ -52,8 +52,8 @@ export class ProjectAggregator extends Aggregate<ProjectEvents, ProjectCommands>
 			})
 			.with(P.instanceOf(NewLayerCommand), (command: NewLayerCommand) => {
 				// Spawn a new ecs entity with the layer component.
-				const entity = this.ecs.createEntity()
-				entity.addComponent(new LayerComponent())
+				const entity = this.ecs.createEntity(command.layerId)
+				entity.addComponent(new LayerComponent(command.name))
 				this.ecs.addEntity(entity)
 
 				return [

@@ -9,6 +9,16 @@ class AggregateError extends Error {
 	}
 }
 
+/**
+ * This class represents a single aggregate in the system.
+ * Aggregates are responsible for handling commands and emitting events.
+ *
+ * Your aggregates are also responsible for the maintenance of ECS entities,
+ * commands are to add and or remove entities and components from entities.
+ *
+ * @template Events - The type of events this aggregate can handle.
+ * @template Commands - The type of commands this aggregate can handle.
+ */
 abstract class Aggregate<Events extends ProjectEvents, Commands extends ProjectCommands> {
 	public readonly name: string
 	private readonly version: number
@@ -105,21 +115,23 @@ class CQRS<A extends Aggregate<Events, ProjectCommands>, Events extends ProjectE
 		const events = await this.aggregate.handle_command(aggregateId, command, metadata)
 		const currentSequence = (await this.getNextSequence(aggregateId)) + 1
 
-		const persistableEvents: PersistableEvent<ProjectEvents>[] = events.map((event, i) => {
-			console.log("Next Sequence: ", currentSequence + i)
+		const persistableEvents: PersistableEvent<ProjectEvents>[] = events.map(
+			(event, i) => {
+				console.log("Next Sequence: ", currentSequence + i)
 
-			return {
-				aggregateTypeId: `${aggregateId}.${this.aggregate.name}.${currentSequence + i}`,
-				aggregateType: this.aggregate.name,
-				aggregateId: aggregateId,
-				sequence: currentSequence + i,
-				eventType: event.constructor.name,
-				eventVersion: event.version,
-				payload: event,
-				metadata: metadata,
-				timestamp: Date.now(),
-			}
-		})
+				return {
+					aggregateTypeId: `${aggregateId}.${this.aggregate.name}.${currentSequence + i}`,
+					aggregateType: this.aggregate.name,
+					aggregateId: aggregateId,
+					sequence: currentSequence + i,
+					eventType: event.constructor.name,
+					eventVersion: event.version,
+					payload: event,
+					metadata: metadata,
+					timestamp: Date.now(),
+				}
+			},
+		)
 
 		await this.eventRepository.commit(persistableEvents)
 

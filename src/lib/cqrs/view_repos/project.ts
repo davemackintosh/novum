@@ -1,6 +1,9 @@
 import { ViewRepository, type PersistableEvent } from ".."
 import { ProjectView } from "../views/project"
-import { persistableEventToProjectEvents, type ProjectEvents } from "$lib/types/commands-events"
+import {
+	persistableEventToProjectEvents,
+	type ProjectEvents,
+} from "$lib/types/commands-events"
 import { dbInstance } from "$lib/rxdb/database"
 
 export class ProjectViewRepo extends ViewRepository<ProjectEvents, ProjectView> {

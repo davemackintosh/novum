@@ -9,7 +9,10 @@ export class DrawingSystem implements System {
 	private readonly context: CanvasRenderingContext2D | null = null
 	private readonly canvas: HTMLCanvasElement | null = null
 
-	constructor(context: CanvasRenderingContext2D | null, canvas: HTMLCanvasElement | null) {
+	constructor(
+		context: CanvasRenderingContext2D | null,
+		canvas: HTMLCanvasElement | null,
+	) {
 		if (context === null) {
 			console.warn("No context provided to DrawingSystem")
 			return
@@ -33,7 +36,9 @@ export class DrawingSystem implements System {
 
 		for (const component of entity.getComponents()) {
 			match(component)
-				.with(P.instanceOf(QuadrilateralComponent), (quad) => this.drawQuadrilateral(quad))
+				.with(P.instanceOf(QuadrilateralComponent), (quad) =>
+					this.drawQuadrilateral(quad),
+				)
 				.with(P.instanceOf(RasterizedImageComponent), (image) => this.renderImage(image))
 		}
 	}
@@ -56,7 +61,13 @@ export class DrawingSystem implements System {
 		imageSource.src = image.icon
 
 		if (image.point) {
-			this.context.drawImage(imageSource, image.point.x, image.point.y, image.width!, image.height!)
+			this.context.drawImage(
+				imageSource,
+				image.point.x,
+				image.point.y,
+				image.width!,
+				image.height!,
+			)
 		}
 	}
 

@@ -12,49 +12,56 @@
 	import { page } from "$app/stores"
 	import { ProjectQuery } from "$lib/cqrs/queries/project"
 	import { RootCanvasPointComponent } from "$lib/ecs/components/root-canvas-point"
+	import { Canvas2DContext } from "$lib/ecs/components/canvas-2d-context"
 	import { Vector } from "$lib/ecs/components/drawings"
-	import { PointerTool } from "$lib/types/toolbox"
-	import { RasterizedImageComponent } from "$lib/ecs/components/rasterized-image"
-	import { CanvasPointComponent } from "$lib/ecs/components/canvas-point"
 	import { CanvasPointsSystem } from "$lib/ecs/systems/canvas-points"
-	import { appTheme } from "$lib/stores/app-config"
 	import Toolbox from "$lib/components/toolbox.svelte"
-	import { PaintbrushComponent } from "$lib/ecs/components/paintbrushes"
+	import {
+		PaintbrushComponent,
+		PaintbrushStylesComponent,
+		PaintbrushType,
+	} from "$lib/ecs/components/paintbrushes"
+	import { CanvasPaintBrushSystem } from "$lib/ecs/systems/canvas-tools/paintbrush"
 
 	let canvas: HTMLCanvasElement | null
 	let currentLayer: Layer | null = null
 	let currentProject: ProjectView | null = null
-	let currentToolSystem = new PointerTool()
 
 	const ecs = new ECS()
 	const viewRepo = new ProjectViewRepo()
 	const query = new ProjectQuery(viewRepo)
 	const cqrs = new CQRS(new ProjectAggregator(ecs), viewRepo)
 
-	const themeBundle = appTheme()
+	const paintbrushSystem = new CanvasPaintBrushSystem()
 
 	// This point gets updated by the canvas point system and updates all other points in the scene.
 	const canvasPoint = new RootCanvasPointComponent(0, 0)
 	const rootEntity = ecs.createEntity()
+
+	const paintbrushStyles = new PaintbrushStylesComponent({
+		width: 30,
+		height: 50,
+		pressure: 1,
+		color: new Vector(0, 0, 0, 1.0),
+		brushType: PaintbrushType.Filbert,
+	})
+	const canvas2dDrawingCtx = new Canvas2DContext()
+	const paintbrush = new PaintbrushComponent()
+
 	rootEntity.addComponent(canvasPoint)
+	rootEntity.addComponent(paintbrushStyles)
+	rootEntity.addComponent(canvas2dDrawingCtx)
+	rootEntity.addComponent(paintbrush)
+
 	ecs.addEntity(rootEntity)
-
-	const cursor = ecs.createEntity()
-	const cursorPosition = new CanvasPointComponent(canvasPoint.point.x, canvasPoint.point.y)
-	cursor.addComponent(new RasterizedImageComponent($themeBundle.getThemeConfig().cursor, 8, 8))
-	cursor.addComponent(cursorPosition)
-	ecs.addEntity(cursor)
-
-	const paintbrushEntity = ecs.createEntity()
-	const paintbrushComponent = new PaintbrushComponent()
-	paintbrushEntity.addComponent(paintbrushComponent)
-	ecs.addEntity(paintbrushEntity)
 
 	async function createNewLayer() {
 		if (!currentProject) {
 			throw new ReferenceError("no current project")
 		}
-		const newLayer = new NewLayerCommand("new layer " + (currentProject!.layers.length + 1))
+		const newLayer = new NewLayerCommand(
+			"new layer " + (currentProject!.layers.length + 1),
+		)
 		await cqrs.dispatchWithMetadata(currentProject!.id!, newLayer, {
 			userAddress: $userAddress,
 		})
@@ -74,7 +81,7 @@
 			return
 		}
 
-		console.log(event)
+		paintbrushSystem.setIsPainting(true)
 	}
 
 	async function updateStroke(event: PointerEvent | TouchEvent) {
@@ -90,6 +97,13 @@
 		if (event instanceof PointerEvent) {
 			canvasPoint.point = new Vector(event.layerX, event.layerY)
 		} else if (event instanceof TouchEvent) {
+			const { radiusX, radiusY, force, rotationAngle } = event.touches[0]
+
+			paintbrushStyles.pressure = force
+			paintbrushStyles.width = radiusX * 2
+			paintbrushStyles.height = radiusY * 2
+			paintbrushStyles.rotation = rotationAngle
+
 			canvasPoint.point = new Vector(event.touches[0].clientX, event.touches[0].clientY)
 		}
 	}
@@ -103,7 +117,7 @@
 			return
 		}
 
-		console.log(event)
+		paintbrushSystem.setIsPainting(false)
 	}
 
 	function loop() {
@@ -118,11 +132,12 @@
 		}
 	}
 
+	function handleColorChange(event: CustomEvent<string>) {
+		paintbrushStyles.color = Vector.fromHex(event.detail)
+	}
+
 	onMount(async () => {
 		await ecs.stateFromStorage($page.params.id)
-
-		ecs.registerSystem(new CanvasPointsSystem())
-		ecs.registerSystem(currentToolSystem)
 
 		currentProject = await viewRepo.load($page.params.id)
 		currentLayer = currentProject.layers[0]
@@ -142,8 +157,13 @@
 	$: if (canvas) resizeCanvas()
 	$: match(canvas?.getContext("2d"))
 		.with(P.nonNullable, (ctx) => {
-			console.log("Got 2d context from canvas")
+			canvas2dDrawingCtx.setCtx(ctx)
+
+			ecs.registerSystem(new CanvasPointsSystem())
 			ecs.registerSystem(new DrawingSystem(ctx, canvas))
+			ecs.registerSystem(paintbrushSystem)
+
+			// Start rendering.
 			loop()
 		})
 		.otherwise(() => {
@@ -160,7 +180,9 @@
 			<div class="project--layers">
 				<p><strong>{currentProject?.name}</strong></p>
 				<div class="toolbox">
-					<button on:click={createNewLayer} disabled={!currentProject}>Create new layer</button>
+					<button on:click={createNewLayer} disabled={!currentProject}
+						>Create new layer</button
+					>
 				</div>
 
 				<ol class="layers">
@@ -171,7 +193,7 @@
 					{/each}
 				</ol>
 			</div>
-			<Toolbox />
+			<Toolbox on:colorchange={handleColorChange} />
 		</aside>
 		<canvas
 			bind:this={canvas}

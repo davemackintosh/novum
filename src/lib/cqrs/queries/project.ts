@@ -16,7 +16,10 @@ export class ProjectQuery extends Query<ProjectView, ProjectViewRepo, ProjectVie
 			.exec()
 	}
 
-	subscribe(query: Partial<ProjectView> | undefined, handler: (values: ProjectView[]) => void) {
+	subscribe(
+		query: Partial<ProjectView> | undefined,
+		handler: (values: ProjectView[]) => void,
+	) {
 		return dbInstance.projects
 			.find({
 				selector: query,

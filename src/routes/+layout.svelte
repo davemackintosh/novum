@@ -21,14 +21,16 @@
 		<p>
 			{$userAddress}
 			<small>
-				Save this somewhere safe, this is your unique Novum address. Lose this and you lose all your
-				work and invites.
+				Save this somewhere safe, this is your unique Novum address. Lose this and you
+				lose all your work and invites.
 			</small>
 		</p>
 		<button
 			type="button"
 			on:click={() => {
-				themeBundle.setThemeKey($themeBundle.currentThemeKey === "light" ? "dark" : "light")
+				themeBundle.setThemeKey(
+					$themeBundle.currentThemeKey === "light" ? "dark" : "light",
+				)
 			}}
 		>
 		</button>

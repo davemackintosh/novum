@@ -18,8 +18,7 @@ export class ECS {
 		this.registeredSystems.push(system)
 	}
 
-	createEntity(): Entity {
-		const entityId = crypto.randomUUID()
+	createEntity(entityId: string = crypto.randomUUID()): Entity {
 		return new Entity(entityId)
 	}
 

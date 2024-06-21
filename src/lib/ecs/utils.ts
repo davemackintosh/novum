@@ -6,7 +6,9 @@ import type { PersistableEvent, ProjectEvents } from "$lib/cqrs"
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Constructor<T> = new (...args: any[]) => T
 
-function entitiesFromPersistableEvents(events: PersistableEvent<ProjectEvents>[]): Entity[] {
+function entitiesFromPersistableEvents(
+	events: PersistableEvent<ProjectEvents>[],
+): Entity[] {
 	const entities: Entity[] = events.map((event) => {
 		const entity = new Entity(event.aggregateId)
 

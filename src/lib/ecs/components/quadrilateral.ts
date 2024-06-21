@@ -6,7 +6,11 @@ export class QuadrilateralComponent implements IComponent {
 	public end?: Vector
 	public styles: DrawableStyles
 
-	constructor(start?: Vector, end?: Vector, styles: DrawableStyles = new DrawableStyles()) {
+	constructor(
+		start?: Vector,
+		end?: Vector,
+		styles: DrawableStyles = new DrawableStyles(),
+	) {
 		this.start = start
 		this.end = end
 		this.styles = styles
