@@ -85,7 +85,4 @@ class ProjectView extends View {
 	}
 }
 
-export {
-	Layer,
-	ProjectView,
-}
+export { Layer, ProjectView }

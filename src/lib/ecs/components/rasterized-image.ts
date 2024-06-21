@@ -13,4 +13,3 @@ export class RasterizedImageComponent implements IComponent {
 		this.height = height
 	}
 }
-

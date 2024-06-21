@@ -30,8 +30,8 @@ const Projects: RxJsonSchema<ProjectView> = {
 			},
 		},
 		handle_event: {
-			type: "null"
-		}
+			type: "null",
+		},
 	},
 } as const
 

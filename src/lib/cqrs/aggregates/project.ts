@@ -35,9 +35,9 @@ export class ProjectAggregator extends Aggregate<ProjectEvents, ProjectCommands>
 			.with(P.instanceOf(JoinCommand), (command: JoinCommand) => {
 				return [new JoinEvent(command.userAddress, command.projectId)]
 			})
-			.with(P.instanceOf(LeaveCommand), (command: LeaveCommand) => (
-				[new LeaveEvent(metadata.userAddress, command.projectId)]
-			))
+			.with(P.instanceOf(LeaveCommand), (command: LeaveCommand) => [
+				new LeaveEvent(metadata.userAddress, command.projectId),
+			])
 			.with(P.instanceOf(NewProjectCommand), (command: NewProjectCommand) => {
 				// Spawn a new ecs entity with the layer component.
 				const entity = this.ecs.createEntity()

@@ -40,11 +40,13 @@ export class ECS {
 	}
 
 	async stateFromStorage(aggregateId: string): Promise<void> {
-		const storedEvents = await dbInstance.events.find({
-			selector: {
-				aggregateId,
-			}
-		}).exec()
+		const storedEvents = await dbInstance.events
+			.find({
+				selector: {
+					aggregateId,
+				},
+			})
+			.exec()
 		const newEntities = entitiesFromPersistableEvents(storedEvents)
 
 		for (const newEntity of newEntities) {

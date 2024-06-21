@@ -8,5 +8,3 @@ export class RootCanvasPointComponent implements IComponent {
 		this.point = new Vector(x, y)
 	}
 }
-
-

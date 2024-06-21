@@ -12,4 +12,3 @@ export class CanvasPointComponent implements IComponent {
 		this.tilt = new Vector(0, 0)
 	}
 }
-

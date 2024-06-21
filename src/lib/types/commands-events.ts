@@ -185,10 +185,7 @@ function persistableEventToProjectEvents(event: PersistableEvent<ProjectEvents>)
 		})
 		.with({ eventType: "JoinEvent" }, () => new JoinEvent(event.metadata.userAddress))
 		.with({ eventType: "LeaveEvent" }, () => new LeaveEvent(event.metadata.userAddress))
-		.with(
-			{ eventType: "NewLayerEvent" },
-			() => new NewLayerEvent(),
-		)
+		.with({ eventType: "NewLayerEvent" }, () => new NewLayerEvent())
 		.with({ eventType: "SetLayerNameEvent" }, () => {
 			const pEvent = event as PersistableEvent<SetLayerNameEvent>
 			return new SetLayerNameEvent(pEvent.payload.layerId, pEvent.payload.name)

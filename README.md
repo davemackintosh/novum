@@ -10,18 +10,22 @@ All work is done and stored in the frontend and there is no backend at all, all 
 
 It approaches the problem using the following ideas:
 
-* ECS
-    * All "layers" are "entities".
-    * All applicable actions are "components"
-    * All rendering and user interaction are "systems"
+- ECS
 
-    > This gives us a very isolated way of adding behaviour to things without having to worry about extending entire feature sets.
-* Event Streaming
-    * All actions are recorded in a ledger and replayed for "eventual consistency" in views and queries.
+  - All "layers" are "entities".
+  - All applicable actions are "components"
+  - All rendering and user interaction are "systems"
 
-    > This gives us the time travel feature as well as the flexibility to create entirely new views and queries while retaining the underlying structure.
-* CQRS
-    * All "write" operations are seperated from all read operations.
+  > This gives us a very isolated way of adding behaviour to things without having to worry about extending entire feature sets.
+
+- Event Streaming
+
+  - All actions are recorded in a ledger and replayed for "eventual consistency" in views and queries.
+
+  > This gives us the time travel feature as well as the flexibility to create entirely new views and queries while retaining the underlying structure.
+
+- CQRS
+  - All "write" operations are seperated from all read operations.
 
 # Okay? So what does what?
 

@@ -68,7 +68,6 @@ class EventRepository {
 			console.log("Inserting event", event)
 			await dbInstance.events.insert(event)
 		}
-
 	}
 }
 
@@ -84,11 +83,13 @@ class CQRS<A extends Aggregate<Events, ProjectCommands>, Events extends ProjectE
 	}
 
 	async getNextSequence(aggregateId: string): Promise<number> {
-		const events = await dbInstance.events.find({
-			selector: {
-				aggregateId,
-			}
-		}).exec()
+		const events = await dbInstance.events
+			.find({
+				selector: {
+					aggregateId,
+				},
+			})
+			.exec()
 
 		console.log("SEQUENCE", events.length)
 
@@ -102,7 +103,7 @@ class CQRS<A extends Aggregate<Events, ProjectCommands>, Events extends ProjectE
 		metadata: Metadata,
 	): Promise<Events[]> {
 		const events = await this.aggregate.handle_command(aggregateId, command, metadata)
-		const currentSequence = await this.getNextSequence(aggregateId) + 1
+		const currentSequence = (await this.getNextSequence(aggregateId)) + 1
 
 		const persistableEvents: PersistableEvent<ProjectEvents>[] = events.map((event, i) => {
 			console.log("Next Sequence: ", currentSequence + i)

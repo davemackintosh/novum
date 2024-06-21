@@ -9,14 +9,18 @@ export class ProjectQuery extends Query<ProjectView, ProjectViewRepo, ProjectVie
 	}
 
 	async query(query: Partial<ProjectView> | undefined): Promise<ProjectView[]> {
-		return dbInstance.projects.find({
-			selector: query
-		}).exec()
+		return dbInstance.projects
+			.find({
+				selector: query,
+			})
+			.exec()
 	}
 
 	subscribe(query: Partial<ProjectView> | undefined, handler: (values: ProjectView[]) => void) {
-		return dbInstance.projects.find({
-			selector: query
-		}).$.subscribe(handler)
+		return dbInstance.projects
+			.find({
+				selector: query,
+			})
+			.$.subscribe(handler)
 	}
 }

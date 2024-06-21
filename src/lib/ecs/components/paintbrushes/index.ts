@@ -1,28 +1,33 @@
-import { match } from "ts-pattern";
-import type { Vector } from "../drawings";
+import { match } from "ts-pattern"
+import type { Vector } from "../drawings"
 
 interface PaintbrushInterface {
 	width: number
 	color: Vector
 
-	paint(ctx: CanvasRenderingContext2D, point: Vector, lastPoint?: Vector): void;
+	paint(ctx: CanvasRenderingContext2D, point: Vector, lastPoint?: Vector): void
 }
 
 enum PaintbrushType {
 	Filbert,
-	Fan
+	Fan,
 }
 
 class PaintbrushComponent implements PaintbrushInterface {
-	color: Vector;
-	width: number;
+	color: Vector
+	width: number
 	dryness: number
 	brushType: PaintbrushType
 	brushWidth = 30
 	brushLength = 60
 	numBristles = 30
 
-	constructor(width: number, color: Vector, brushType: PaintbrushType = PaintbrushType.Filbert, dryness: number = 0.0) {
+	constructor(
+		width: number,
+		color: Vector,
+		brushType: PaintbrushType = PaintbrushType.Filbert,
+		dryness: number = 0.0,
+	) {
 		this.color = color
 		this.width = width
 		this.dryness = dryness
@@ -35,19 +40,23 @@ class PaintbrushComponent implements PaintbrushInterface {
 			.otherwise(() => this.paintFilbertStroke(ctx, point, prevPoint))
 	}
 
-	private paintFilbertStroke(ctx: CanvasRenderingContext2D, point: Vector, prevPoint?: Vector): void {
+	private paintFilbertStroke(
+		ctx: CanvasRenderingContext2D,
+		point: Vector,
+		prevPoint?: Vector,
+	): void {
 		const mouseX = point.x
 		const mouseY = point.y
 		const lastX = prevPoint?.x ?? mouseX
 		const lastY = prevPoint?.y ?? mouseY
 
-		const dx = mouseX - lastX;
-		const dy = mouseY - lastY;
-		const angle = Math.atan2(dy, dx);
-		const perpendicularAngle = angle + Math.PI / 2;
+		const dx = mouseX - lastX
+		const dy = mouseY - lastY
+		const angle = Math.atan2(dy, dx)
+		const perpendicularAngle = angle + Math.PI / 2
 
 		// Clear the brush path for smoother strokes
-		ctx.globalCompositeOperation = 'source-over';
+		ctx.globalCompositeOperation = "source-over"
 
 		for (let i = 0; i < this.numBristles; i++) {
 			const offset = (Math.random() - 0.5) * this.brushWidth
@@ -68,7 +77,4 @@ class PaintbrushComponent implements PaintbrushInterface {
 	}
 }
 
-export {
-	PaintbrushComponent,
-	type PaintbrushInterface,
-}
+export { PaintbrushComponent, type PaintbrushInterface }

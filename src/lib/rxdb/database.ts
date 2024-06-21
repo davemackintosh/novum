@@ -29,7 +29,7 @@ async function getDatabase(): Promise<RxDatabase<DatabaseType>> {
 		addRxPlugin(RxDBDevModePlugin)
 	}
 
-	addRxPlugin(RxDBMigrationSchemaPlugin);
+	addRxPlugin(RxDBMigrationSchemaPlugin)
 	addRxPlugin(RxDBLeaderElectionPlugin)
 
 	const db = await createRxDatabase<DatabaseType>({
@@ -53,7 +53,7 @@ async function getDatabase(): Promise<RxDatabase<DatabaseType>> {
 		},
 		config: {
 			schema: Config,
-		}
+		},
 	})
 
 	await db.waitForLeadership()

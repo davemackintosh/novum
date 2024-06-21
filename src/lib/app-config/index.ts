@@ -13,12 +13,8 @@ interface PersistableThemeBundle {
 
 interface AppTheme extends PersistableThemeBundle {
 	getThemeConfig(): AppThemeProperties
-	setThemeKey(key: string): void;
-	fromPersistence(document: RxDocument<PersistableThemeBundle>): AppTheme;
+	setThemeKey(key: string): void
+	fromPersistence(document: RxDocument<PersistableThemeBundle>): AppTheme
 }
 
-export {
-	type AppTheme,
-	type AppThemeProperties,
-	type PersistableThemeBundle
-}
+export { type AppTheme, type AppThemeProperties, type PersistableThemeBundle }

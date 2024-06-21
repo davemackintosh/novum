@@ -1,5 +1,5 @@
-import type { RxDocument } from "rxdb";
-import { type AppTheme, type AppThemeProperties, type PersistableThemeBundle } from "..";
+import type { RxDocument } from "rxdb"
+import { type AppTheme, type AppThemeProperties, type PersistableThemeBundle } from ".."
 
 export class DefaultTheme implements AppTheme {
 	readonly bundleName: string
@@ -9,14 +9,14 @@ export class DefaultTheme implements AppTheme {
 		light: {
 			background: "#f8f8f8",
 			foreground: "#191920",
-			cursor: "/theme/cursor-dark.png"
+			cursor: "/theme/cursor-dark.png",
 		},
 
 		dark: {
 			background: "#191920",
 			foreground: "#f8f8f8",
-			cursor: "/theme/cursor-light.png"
-		}
+			cursor: "/theme/cursor-light.png",
+		},
 	}
 
 	private static DEFAULT_THEME_KEY = "light"
@@ -37,5 +37,4 @@ export class DefaultTheme implements AppTheme {
 	setThemeKey(key: string): void {
 		this.currentThemeKey = key
 	}
-
 }

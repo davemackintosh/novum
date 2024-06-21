@@ -1,10 +1,10 @@
-import { P, match } from "ts-pattern";
-import { RootCanvasPointComponent } from "$lib/ecs/components/root-canvas-point";
-import { PaintbrushComponent } from "$lib/ecs/components/paintbrushes";
-import type { IComponent, System } from "$lib/ecs/abstracts";
-import type { Entity } from "$lib/ecs/entity";
-import type { Vector } from "$lib/ecs/components/drawings";
-import { Canvas2DContext } from "$lib/ecs/components/canvas-2d-context";
+import { P, match } from "ts-pattern"
+import { RootCanvasPointComponent } from "$lib/ecs/components/root-canvas-point"
+import { PaintbrushComponent } from "$lib/ecs/components/paintbrushes"
+import type { IComponent, System } from "$lib/ecs/abstracts"
+import type { Entity } from "$lib/ecs/entity"
+import type { Vector } from "$lib/ecs/components/drawings"
+import { Canvas2DContext } from "$lib/ecs/components/canvas-2d-context"
 
 export class CanvasPaintBrushSystem implements System {
 	public rootCanvasPoint: RootCanvasPointComponent | undefined
@@ -34,4 +34,3 @@ export class CanvasPaintBrushSystem implements System {
 			.otherwise(() => false)
 	}
 }
-

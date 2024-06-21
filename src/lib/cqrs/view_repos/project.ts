@@ -23,18 +23,19 @@ export class ProjectViewRepo extends ViewRepository<ProjectEvents, ProjectView> 
 		this.view.handle_event(event)
 	}
 
-
 	async load(aggregateId: string): Promise<ProjectView> {
-		const events: PersistableEvent<ProjectEvents>[] = await dbInstance.events.find({
-			selector: {
-				aggregateId,
-			},
-			sort: [
-				{
-					sequence: "asc"
-				}
-			]
-		}).exec()
+		const events: PersistableEvent<ProjectEvents>[] = await dbInstance.events
+			.find({
+				selector: {
+					aggregateId,
+				},
+				sort: [
+					{
+						sequence: "asc",
+					},
+				],
+			})
+			.exec()
 
 		console.info("Loaded events from storage", events)
 

@@ -1,4 +1,4 @@
-import type { IComponent } from "../abstracts";
+import type { IComponent } from "../abstracts"
 
 export class Canvas2DContext implements IComponent {
 	public ctx: CanvasRenderingContext2D

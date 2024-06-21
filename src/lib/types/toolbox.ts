@@ -22,8 +22,7 @@ class ToolboxToolBase {
 	description?: string
 	tutorial?: string
 
-	constructor() {
-	}
+	constructor() {}
 }
 
 class PointerTool extends ToolboxToolBase implements System {

@@ -23,4 +23,3 @@ const Config: RxJsonSchema<PersistableThemeBundle> = {
 type ConfigCollection = RxCollection<PersistableThemeBundle>
 
 export { Config, type ConfigCollection }
-
