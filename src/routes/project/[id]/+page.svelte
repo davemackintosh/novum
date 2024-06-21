@@ -19,7 +19,7 @@
 	import { CanvasPointsSystem } from "$lib/ecs/systems/canvas-points"
 	import { appTheme } from "$lib/stores/app-config"
 	import Toolbox from "$lib/components/toolbox.svelte"
-	import { PaintbrushComponent } from "$lib/ecs/components/paintbrush"
+	import { PaintbrushComponent } from "$lib/ecs/components/paintbrushes"
 
 	let canvas: HTMLCanvasElement | null
 	let currentLayer: Layer | null = null
