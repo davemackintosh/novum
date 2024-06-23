@@ -8,12 +8,14 @@ import { getRxStorageDexie } from "rxdb/plugins/storage-dexie"
 import { Events, type EventsCollection } from "./collections/events"
 import { Projects, type ProjectsCollection } from "./collections/projects"
 import { Config, type ConfigCollection } from "./collections/config"
+import { ColorPalette, type ColorPaletteCollection } from "./collections/colors"
 import { browser } from "$app/environment"
 
 type DatabaseType = {
 	events: EventsCollection
 	projects: ProjectsCollection
 	config: ConfigCollection
+	colorPalette: ColorPaletteCollection
 }
 
 /**
@@ -54,6 +56,9 @@ async function getDatabase(): Promise<RxDatabase<DatabaseType>> {
 		config: {
 			schema: Config,
 		},
+		color_palette: {
+			schema: ColorPalette,
+		}
 	})
 
 	await db.waitForLeadership()

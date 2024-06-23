@@ -9,6 +9,7 @@ import {
 	SetLayerNameEvent,
 	type ProjectEvents,
 } from "$lib/types/commands-events"
+import type { ColorPalettes } from "$lib/types/color-palette"
 
 class Layer {
 	id: string
@@ -29,6 +30,7 @@ class ProjectView extends View {
 	public name?: string | null
 	public layers: Layer[]
 	public members: string[]
+	public colorPalettes: ColorPalettes
 
 	constructor(name?: string | null, id?: string | null) {
 		super()
@@ -37,6 +39,7 @@ class ProjectView extends View {
 		this.name = name
 		this.layers = []
 		this.members = []
+		this.colorPalettes = []
 	}
 
 	public handle_event(event: ProjectEvents): ProjectView {

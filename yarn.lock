@@ -2001,6 +2001,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"colord@npm:^2.9.3":
+  version: 2.9.3
+  resolution: "colord@npm:2.9.3"
+  checksum: 10c0/9699e956894d8996b28c686afe8988720785f476f59335c80ce852ded76ab3ebe252703aec53d9bef54f6219aea6b960fb3d9a8300058a1d0c0d4026460cd110
+  languageName: node
+  linkType: hard
+
 "commander@npm:^10.0.0":
   version: 10.0.1
   resolution: "commander@npm:10.0.1"
@@ -4235,6 +4242,7 @@ __metadata:
     rxdb: "npm:^15.24.0"
     rxjs: "npm:^7.8.1"
     svelte: "npm:^4.2.18"
+    svelte-awesome-color-picker: "npm:^3.1.0"
     svelte-check: "npm:^3.8.1"
     ts-pattern: "npm:^5.2.0"
     tslib: "npm:^2.6.3"
@@ -5319,6 +5327,27 @@ __metadata:
   version: 1.0.0
   resolution: "supports-preserve-symlinks-flag@npm:1.0.0"
   checksum: 10c0/6c4032340701a9950865f7ae8ef38578d8d7053f5e10518076e6554a9381fa91bd9c6850193695c141f32b21f979c985db07265a758867bac95de05f7d8aeb39
+  languageName: node
+  linkType: hard
+
+"svelte-awesome-color-picker@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "svelte-awesome-color-picker@npm:3.1.0"
+  dependencies:
+    colord: "npm:^2.9.3"
+    svelte-awesome-slider: "npm:^1.1.0"
+  peerDependencies:
+    svelte: ^3.55.1 || ^4.0.0
+  checksum: 10c0/341372015413b555710552848563ea6f72d7bfa59cacb5ef85a95d67494b05a1d88cfcd3b010c23dcc5b93d5887bd567a8903fb728a74b1806df53616d7067c5
+  languageName: node
+  linkType: hard
+
+"svelte-awesome-slider@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "svelte-awesome-slider@npm:1.1.0"
+  peerDependencies:
+    svelte: ^3.54.0 || ^4.0.0
+  checksum: 10c0/4df7a27c389dd748a8df960aeb01a4252547157cf8996a3f77a246c59f57a989e0c2222b84f633096b609b6f3215c687666e819aca95e3ddb41d43c5b6e008d8
   languageName: node
   linkType: hard
 

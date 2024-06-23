@@ -22,11 +22,13 @@
 		PaintbrushType,
 	} from "$lib/ecs/components/paintbrushes"
 	import { CanvasPaintBrushSystem } from "$lib/ecs/systems/canvas-tools/paintbrush"
+	import { appTheme } from "$lib/stores/app-config"
 
 	let canvas: HTMLCanvasElement | null
 	let currentLayer: Layer | null = null
 	let currentProject: ProjectView | null = null
 
+	const themeBundle = appTheme()
 	const ecs = new ECS()
 	const viewRepo = new ProjectViewRepo()
 	const query = new ProjectQuery(viewRepo)
@@ -172,42 +174,69 @@
 </script>
 
 <svelte:window on:resize={resizeCanvas} />
-<div class="toolbox-canvas">
-	{#if !currentProject}
-		<p>Loading...</p>
-	{:else}
-		<aside class="project-meta">
-			<div class="project--layers">
-				<p><strong>{currentProject?.name}</strong></p>
-				<div class="toolbox">
-					<button on:click={createNewLayer} disabled={!currentProject}
-						>Create new layer</button
-					>
-				</div>
+<div class="project">
+	<header>
+		<p>
+			{$userAddress}
+			<small>
+				Save this somewhere safe, this is your unique Novum address. Lose this and you
+				lose all your work and invites.
+			</small>
+		</p>
+		<button
+			type="button"
+			on:click={() => {
+				themeBundle.setThemeKey(
+					$themeBundle.currentThemeKey === "light" ? "dark" : "light",
+				)
+			}}
+		>
+		</button>
+		<Toolbox on:colorchange={handleColorChange} />
+	</header>
+	<div class="toolbox-canvas">
+		{#if !currentProject}
+			<p>Loading...</p>
+		{:else}
+			<aside class="project-meta">
+				<div class="project--layers">
+					<p><strong>{currentProject?.name}</strong></p>
+					<div class="toolbox">
+						<button on:click={createNewLayer} disabled={!currentProject}
+							>Create new layer</button
+						>
+					</div>
 
-				<ol class="layers">
-					{#each currentProject.layers as layer}
-						<li class:selected={currentLayer?.id === layer.id}>
-							<button on:click={() => selectLayer(layer)}>{layer.name}</button>
-						</li>
-					{/each}
-				</ol>
-			</div>
-			<Toolbox on:colorchange={handleColorChange} />
-		</aside>
-		<canvas
-			bind:this={canvas}
-			on:touchstart={beginStroke}
-			on:touchmove={updateStroke}
-			on:touchend={endStroke}
-			on:pointerdown={beginStroke}
-			on:pointermove={updateStroke}
-			on:pointerup={endStroke}
-		/>
-	{/if}
+					<ol class="layers">
+						{#each currentProject.layers as layer}
+							<li class:selected={currentLayer?.id === layer.id}>
+								<button on:click={() => selectLayer(layer)}>{layer.name}</button>
+							</li>
+						{/each}
+					</ol>
+				</div>
+			</aside>
+			<canvas
+				bind:this={canvas}
+				on:touchstart|preventDefault={beginStroke}
+				on:touchmove|preventDefault={updateStroke}
+				on:touchend|preventDefault={endStroke}
+				on:pointerdown|preventDefault={beginStroke}
+				on:pointermove|preventDefault={updateStroke}
+				on:pointerup|preventDefault={endStroke}
+			/>
+		{/if}
+	</div>
 </div>
 
 <style>
+	header {
+		display: flex;
+		flex-direction: row;
+		padding: 1em;
+		z-index: 1;
+	}
+
 	.toolbox-canvas {
 		display: flex;
 		height: 100vh;

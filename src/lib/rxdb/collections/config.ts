@@ -3,7 +3,7 @@ import { type PersistableThemeBundle } from "$lib/app-config"
 
 const Config: RxJsonSchema<PersistableThemeBundle> = {
 	version: 0,
-	title: "projects",
+	title: "config",
 	description: "Application config.",
 	primaryKey: "bundleName",
 	type: "object",

@@ -32,6 +32,42 @@ const Projects: RxJsonSchema<ProjectView> = {
 		handle_event: {
 			type: "null",
 		},
+		colorPalettes: {
+			type: "array",
+			items: {
+				type: "object",
+				properties: {
+					id: {
+						type: "string",
+						maxLength: 255,
+					},
+					name: {
+						type: "string",
+					},
+					colors: {
+						type: "array",
+						items: {
+							type: "object",
+							properties: {
+								x: {
+									type: "string",
+								},
+								y: {
+									type: "string",
+								},
+								z: {
+									type: "string",
+								},
+							},
+							required: ["x", "y", "z"],
+							additionalProperties: false,
+						}
+					},
+				},
+				required: ["id", "name", "colors"],
+				additionalProperties: false,
+			}
+		}
 	},
 } as const
 
