@@ -1,11 +1,11 @@
 import { type RxCollection, type RxJsonSchema } from "rxdb"
-import type { DrawingEvents } from "$lib/types/commands-events"
+import type { ProjectEvents } from "$lib/types/commands-events"
 
 interface Metadata {
 	userAddress: string
 }
 
-interface PersistableEvent<T extends DrawingEvents> {
+interface PersistableEvent<T extends ProjectEvents> {
 	aggregateTypeId: string
 	aggregateType: string
 	aggregateId: string
@@ -17,7 +17,7 @@ interface PersistableEvent<T extends DrawingEvents> {
 	timestamp: number
 }
 
-const Events: RxJsonSchema<PersistableEvent<DrawingEvents>> = {
+const Events: RxJsonSchema<PersistableEvent<ProjectEvents>> = {
 	version: 0,
 	title: "events",
 	description: "The event source events that make up this instance of Novum.",
@@ -57,6 +57,6 @@ const Events: RxJsonSchema<PersistableEvent<DrawingEvents>> = {
 	},
 } as const
 
-type EventsCollection = RxCollection<PersistableEvent<DrawingEvents>>
+type EventsCollection = RxCollection<PersistableEvent<ProjectEvents>>
 
 export { Events, type PersistableEvent, type Metadata, type EventsCollection }

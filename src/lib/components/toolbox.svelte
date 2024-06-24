@@ -1,5 +1,4 @@
 <script lang="ts" context="module">
-	import { createEventDispatcher } from "svelte"
 	export enum AvailableTools {
 		Pointer,
 		RectangleSelector,
@@ -19,6 +18,9 @@
 </script>
 
 <script lang="ts">
+	import { createEventDispatcher } from "svelte"
+	import ColorPalettePanel from "$lib/components/color-palette-panel.svelte"
+
 	const toolbelt: ToolObject[] = [
 		{
 			type: AvailableTools.Pointer,
@@ -77,12 +79,7 @@
 		{/each}
 	</ul>
 	<div class="color-palette">
-		<label for="color-picker">Color:</label>
-		<input
-			type="color"
-			id="color-picker"
-			on:change={(e) => handleColorChange(e.currentTarget.value)}
-		/>
+		<ColorPalettePanel on:colorchange={(event) => handleColorChange(event.detail)} />
 	</div>
 </div>
 

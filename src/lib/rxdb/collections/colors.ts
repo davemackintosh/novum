@@ -23,13 +23,16 @@ const ColorPalette: RxJsonSchema<ColorPaletteType> = {
 				type: "object",
 				properties: {
 					x: {
-						type: "string",
+						type: "number",
 					},
 					y: {
-						type: "string",
+						type: "number",
 					},
 					z: {
-						type: "string",
+						type: "number",
+					},
+					w: {
+						type: "number",
 					},
 				},
 				required: ["x", "y", "z"],

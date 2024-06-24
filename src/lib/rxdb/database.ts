@@ -15,7 +15,12 @@ type DatabaseType = {
 	events: EventsCollection
 	projects: ProjectsCollection
 	config: ConfigCollection
-	colorPalette: ColorPaletteCollection
+	color_palette: ColorPaletteCollection
+}
+
+interface TableCodec<InstanceType, PersistableType = InstanceType> {
+	encode(instance: InstanceType): PersistableType
+	decode(persistable: PersistableType): InstanceType
 }
 
 /**
@@ -68,4 +73,4 @@ async function getDatabase(): Promise<RxDatabase<DatabaseType>> {
 
 const dbInstance: RxDatabase<DatabaseType> = await getDatabase()
 
-export { getDatabase, dbInstance }
+export { getDatabase, dbInstance, type TableCodec }

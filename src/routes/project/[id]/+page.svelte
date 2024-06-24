@@ -235,6 +235,7 @@
 		flex-direction: row;
 		padding: 1em;
 		z-index: 1;
+		position: fixed;
 	}
 
 	.toolbox-canvas {
@@ -249,6 +250,7 @@
 		border-right: 1px solid black;
 		padding: 1em;
 		z-index: 1;
+		position: fixed;
 	}
 
 	canvas {
