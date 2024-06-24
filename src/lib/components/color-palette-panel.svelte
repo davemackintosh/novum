@@ -23,6 +23,7 @@
 		palettes = await query.exec()
 
 		query.$.subscribe((changes) => {
+			console.log("Changes detected:", changes)
 			palettes = changes
 		})
 	})

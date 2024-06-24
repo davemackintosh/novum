@@ -1,14 +1,15 @@
 import { Query } from "$lib/cqrs"
 import { ProjectViewRepo } from "$lib/cqrs/view_repos/project"
-import { ProjectView } from "$lib/cqrs/views/project"
+import { ProjectView, type IProjectView } from "$lib/cqrs/views/project"
+import type { Project } from "$lib/rxdb/collections/projects"
 import { dbInstance } from "$lib/rxdb/database"
 
-export class ProjectQuery extends Query<ProjectView, ProjectViewRepo, ProjectView[]> {
+export class ProjectQuery extends Query<ProjectView, ProjectViewRepo, Project[]> {
 	constructor(repo: ProjectViewRepo) {
 		super(repo)
 	}
 
-	async query(query: Partial<ProjectView> | undefined): Promise<ProjectView[]> {
+	async query(query: Partial<ProjectView> | undefined): Promise<Project[]> {
 		return dbInstance.projects
 			.find({
 				selector: query,
@@ -18,7 +19,7 @@ export class ProjectQuery extends Query<ProjectView, ProjectViewRepo, ProjectVie
 
 	subscribe(
 		query: Partial<ProjectView> | undefined,
-		handler: (values: ProjectView[]) => void,
+		handler: (values: Project[]) => void,
 	) {
 		return dbInstance.projects
 			.find({

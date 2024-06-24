@@ -5,22 +5,28 @@ import { wrappedKeyEncryptionCryptoJsStorage } from "rxdb/plugins/encryption-cry
 import { RxDBLeaderElectionPlugin } from "rxdb/plugins/leader-election"
 import { addRxPlugin, createRxDatabase, type RxDatabase } from "rxdb"
 import { getRxStorageDexie } from "rxdb/plugins/storage-dexie"
-import { Events, type EventsCollection } from "./collections/events"
-import { Projects, type ProjectsCollection } from "./collections/projects"
-import { Config, type ConfigCollection } from "./collections/config"
-import { ColorPalette, type ColorPaletteCollection } from "./collections/colors"
+import { Events } from "./collections/events"
+import { Project } from "./collections/projects"
+import { Config } from "./collections/config"
+import { ColorPalette } from "./collections/color-palette"
 import { browser } from "$app/environment"
 
+const enum CollectionNames {
+	EVENTS = "events",
+	PROJECTS = "projects",
+	CONFIG = "config",
+	COLOR_PALETTES = "color_palettes",
+}
+
 type DatabaseType = {
-	events: EventsCollection
-	projects: ProjectsCollection
-	config: ConfigCollection
-	color_palette: ColorPaletteCollection
+	[CollectionNames.EVENTS]: typeof Events.Collection
+	[CollectionNames.PROJECTS]: typeof Project.Collection
+	[CollectionNames.CONFIG]: typeof Config.Collection
+	[CollectionNames.COLOR_PALETTES]: typeof ColorPalette.Collection
 }
 
 interface TableCodec<InstanceType, PersistableType = InstanceType> {
 	encode(instance: InstanceType): PersistableType
-	decode(persistable: PersistableType): InstanceType
 }
 
 /**
@@ -52,17 +58,29 @@ async function getDatabase(): Promise<RxDatabase<DatabaseType>> {
 	})
 
 	await db.addCollections({
-		events: {
-			schema: Events,
+		[CollectionNames.EVENTS]: {
+			schema: Events.SCHEMA,
+			methods: {
+				decode: Events.fromDatabase,
+			}
 		},
-		projects: {
-			schema: Projects,
+		[CollectionNames.PROJECTS]: {
+			schema: Project.SCHEMA,
+			methods: {
+				decode: Project.fromDatabase,
+			}
 		},
-		config: {
-			schema: Config,
+		[CollectionNames.CONFIG]: {
+			schema: Config.SCHEMA,
+			methods: {
+				decode: Config.fromDatabase,
+			}
 		},
-		color_palette: {
-			schema: ColorPalette,
+		[CollectionNames.COLOR_PALETTES]: {
+			schema: ColorPalette.SCHEMA,
+			methods: {
+				decode: ColorPalette.fromDatabase,
+			}
 		}
 	})
 
@@ -73,4 +91,4 @@ async function getDatabase(): Promise<RxDatabase<DatabaseType>> {
 
 const dbInstance: RxDatabase<DatabaseType> = await getDatabase()
 
-export { getDatabase, dbInstance, type TableCodec }
+export { getDatabase, dbInstance, type TableCodec, CollectionNames }

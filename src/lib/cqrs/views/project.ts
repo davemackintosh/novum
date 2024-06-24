@@ -1,4 +1,5 @@
 import { P, match } from "ts-pattern"
+import type { RxDocument } from "rxdb"
 import { View } from "$lib/cqrs"
 import {
 	JoinEvent,
@@ -10,6 +11,7 @@ import {
 	type ProjectEvents,
 } from "$lib/types/commands-events"
 import type { ColorPalettes } from "$lib/types/color-palette"
+import type { TableCodec } from "$lib/rxdb/database"
 
 class Layer {
 	id: string
@@ -25,12 +27,20 @@ class Layer {
 	}
 }
 
-class ProjectView extends View {
-	public id?: string | null
-	public name?: string | null
-	public layers: Layer[]
-	public members: string[]
-	public colorPalettes: ColorPalettes
+interface IProjectView {
+	id?: string | null
+	name?: string | null
+	layers: Layer[]
+	members: string[]
+	colorPalettes: ColorPalettes
+}
+
+class ProjectView extends View implements IProjectView, TableCodec<ProjectView, IProjectView> {
+	id?: string | null
+	name?: string | null
+	layers: Layer[]
+	members: string[]
+	colorPalettes: ColorPalettes
 
 	constructor(name?: string | null, id?: string | null) {
 		super()
@@ -40,6 +50,26 @@ class ProjectView extends View {
 		this.layers = []
 		this.members = []
 		this.colorPalettes = []
+	}
+
+	decode(persistable: RxDocument<IProjectView>): ProjectView {
+		this.id = persistable.get("id")
+		this.name = persistable.get("name")
+		this.layers = persistable.get("layers").map((layer) => new Layer(layer.id, layer.name))
+		this.members = persistable.get("members")
+		this.colorPalettes = persistable.get("colorPalettes")
+
+		return this
+	}
+
+	encode(instance: ProjectView): IProjectView {
+		return {
+			id: instance.id,
+			name: instance.name,
+			layers: instance.layers.map((layer) => ({ id: layer.id, name: layer.name })),
+			members: instance.members,
+			colorPalettes: instance.colorPalettes,
+		}
 	}
 
 	public handle_event(event: ProjectEvents): ProjectView {
@@ -88,4 +118,4 @@ class ProjectView extends View {
 	}
 }
 
-export { Layer, ProjectView }
+export { Layer, ProjectView, type IProjectView }

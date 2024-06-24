@@ -1,14 +1,14 @@
 <script lang="ts">
 	import ProjectCard from "./project-card.svelte"
 	import type { ProjectView } from "$lib/cqrs/views/project"
-	import type { CQRS, DrawingEvents } from "$lib/cqrs"
-	import type { ArtistAggregator } from "$lib/cqrs/aggregates/project"
+	import type { CQRS, ProjectEvents } from "$lib/cqrs"
+	import type { ProjectAggregator } from "$lib/cqrs/aggregates/project"
 	import { NewProjectCommand } from "$lib/types/commands-events"
 	import { userAddress } from "$lib/stores/user"
 
 	let projectName = ""
 	export let projects: ProjectView[]
-	export let cqrsInstance: CQRS<ArtistAggregator, DrawingEvents>
+	export let cqrsInstance: CQRS<ProjectAggregator, ProjectEvents>
 
 	function newProject() {
 		const aggregateId = crypto.randomUUID()

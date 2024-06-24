@@ -6,11 +6,11 @@
 	import { ProjectAggregator } from "$lib/cqrs/aggregates/project"
 	import { ProjectViewRepo } from "$lib/cqrs/view_repos/project"
 	import { ProjectQuery } from "$lib/cqrs/queries/project"
-	import type { ProjectView } from "$lib/cqrs/views/project"
+	import type { IProjectView } from "$lib/cqrs/views/project"
 	import { ECS } from "$lib/ecs"
 
 	let error: string | null = null
-	let projects: ProjectView[] = []
+	let projects: IProjectView[] = []
 
 	const ecs = new ECS()
 	const viewRepo = new ProjectViewRepo()
@@ -22,7 +22,7 @@
 
 		query.subscribe({}, (newProjects) => {
 			error = null
-			projects = newProjects
+			projects = newProjects.map((p) => p.decode())
 		})
 	})
 </script>

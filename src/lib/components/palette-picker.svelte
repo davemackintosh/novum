@@ -11,13 +11,13 @@
 	export let palettes: ColorPalettes
 
 	async function requestNewPalette() {
-		await dbInstance.color_palette.insert({
+		const created = await dbInstance.color_palette.insert({
 			id: crypto.randomUUID(),
 			name: newPaletteName,
-            colors: [
-				new Vector(0, 0, 0),
-			],
+			colors: [new Vector(0, 0, 0)],
 		})
+
+		console.log(`Created new palette: `, created)
 	}
 
 	async function updatePalette(palette: ColorPalette) {
@@ -42,6 +42,8 @@
 		console.log(`Updating color in palette: ${palette.name}`)
 		console.log(event.detail)
 	}
+
+	$: console.log(palettes)
 </script>
 
 <div class="color-palette">
