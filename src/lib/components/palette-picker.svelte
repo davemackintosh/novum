@@ -3,15 +3,15 @@
 		type HsvaColor,
 		type RgbaColor,
 	} from "svelte-awesome-color-picker"
-	import { Vector } from "$lib/ecs/components/drawings"
-	import type { ColorPalette, ColorPalettes } from "$lib/types/color-palette"
-	import { dbInstance } from "$lib/rxdb/database"
+	import { Vector } from "$lib/types/vector"
+	import type { ColorPalette, ColorPalettes } from "$lib/rxdb/collections/color-palette"
+	import { CollectionNames, dbInstance } from "$lib/rxdb/database"
 
 	let newPaletteName = ""
 	export let palettes: ColorPalettes
 
 	async function requestNewPalette() {
-		const created = await dbInstance.color_palette.insert({
+		const created = await dbInstance[CollectionNames.COLOR_PALETTES].insert({
 			id: crypto.randomUUID(),
 			name: newPaletteName,
 			colors: [new Vector(0, 0, 0)],

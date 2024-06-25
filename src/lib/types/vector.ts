@@ -46,8 +46,8 @@ class Vector implements IVector, TableCodec<Vector, IVector> {
 	}
 
 	private colorComponentToHex(c: number): string {
-		const hex = c.toString(16);
-		return hex.length == 1 ? "0" + hex : hex;
+		const hex = c.toString(16)
+		return hex.length == 1 ? "0" + hex : hex
 	}
 
 	public toHex(): string {

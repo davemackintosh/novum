@@ -1,8 +1,9 @@
-import type { System } from "$lib/ecs/abstracts"
+import { P, match } from "ts-pattern"
+import type { IComponent, System } from "$lib/ecs/abstracts"
 import { CanvasPointComponent } from "$lib/ecs/components/canvas-point"
-import type { Vector } from "$lib/ecs/components/drawings"
 import type { Entity } from "$lib/ecs/entity"
 import { ToolboxTool, ToolboxToolBase } from "$lib/types/toolbox"
+import { Vector } from "$lib/types/vector"
 
 export class RectangleSelection extends ToolboxToolBase implements System {
 	start?: Vector
@@ -35,4 +36,3 @@ export class RectangleSelection extends ToolboxToolBase implements System {
 			.otherwise(() => false)
 	}
 }
-

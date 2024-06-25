@@ -2,8 +2,8 @@ import { P, match } from "ts-pattern"
 import { RootCanvasPointComponent } from "../components/root-canvas-point"
 import type { IComponent, System } from "$lib/ecs/abstracts"
 import type { Entity } from "$lib/ecs/entity"
-import type { Vector } from "$lib/ecs/components/drawings"
 import { CanvasPointComponent } from "$lib/ecs/components/canvas-point"
+import { Vector } from "$lib/types/vector"
 
 export class CanvasPointsSystem implements System {
 	public rootCanvasPoint: RootCanvasPointComponent | undefined

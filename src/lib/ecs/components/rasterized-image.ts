@@ -1,5 +1,5 @@
-import type { Vector } from "./drawings"
 import { type IComponent } from "$lib/ecs/abstracts"
+import { Vector } from "$lib/types/vector"
 
 export class RasterizedImageComponent implements IComponent {
 	public icon: string

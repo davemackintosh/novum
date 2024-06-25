@@ -3,9 +3,6 @@ enum ToolboxTool {
 	RectangleSelection,
 	Pencil,
 	Eraser,
-	Rectangle,
-	Line,
-	Quadrilateral,
 }
 
 class ToolboxToolBase {
@@ -15,9 +12,7 @@ class ToolboxToolBase {
 	description?: string
 	tutorial?: string
 
-	constructor() { }
+	constructor() {}
 }
-
-
 
 export { ToolboxTool, ToolboxToolBase }

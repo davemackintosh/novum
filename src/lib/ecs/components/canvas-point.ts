@@ -1,5 +1,5 @@
-import { Vector } from "./drawings"
 import { type IComponent } from "$lib/ecs/abstracts"
+import { Vector } from "$lib/types/vector"
 
 export class CanvasPointComponent implements IComponent {
 	public point: Vector

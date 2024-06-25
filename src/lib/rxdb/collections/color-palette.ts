@@ -1,5 +1,5 @@
 import type { RxDocument, RxJsonSchema, RxCollection } from "rxdb"
-import type { TableCodec } from "$lib/rxdb/database"
+import type { StaticMethods, TableCodec } from "../types"
 import type { Vector } from "$lib/types/vector"
 
 interface IColorPalette {
@@ -20,7 +20,11 @@ class ColorPalette implements IColorPalette, TableCodec<ColorPalette, IColorPale
 	}
 
 	static fromDatabase(persistable: RxDocument<IColorPalette>): ColorPalette {
-		return new ColorPalette(persistable.get("id"), persistable.get("name"), persistable.get("colors").map())
+		return new ColorPalette(
+			persistable.get("id"),
+			persistable.get("name"),
+			persistable.get("colors").map(),
+		)
 	}
 
 	encode(instance: ColorPalette): IColorPalette {
@@ -67,19 +71,14 @@ class ColorPalette implements IColorPalette, TableCodec<ColorPalette, IColorPale
 					},
 					required: ["x", "y", "z"],
 					additionalProperties: false,
-				}
+				},
 			},
 		},
 	} as const
 
-
-	static Collection: RxCollection<IColorPalette>
+	static Collection: RxCollection<IColorPalette, StaticMethods<ColorPalette>>
 }
 
 type ColorPalettes = ColorPalette[]
 
-export {
-	ColorPalette,
-	type IColorPalette,
-	type ColorPalettes,
-}
+export { ColorPalette, type IColorPalette, type ColorPalettes }

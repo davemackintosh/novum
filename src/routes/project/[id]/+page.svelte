@@ -13,7 +13,6 @@
 	import { ProjectQuery } from "$lib/cqrs/queries/project"
 	import { RootCanvasPointComponent } from "$lib/ecs/components/root-canvas-point"
 	import { Canvas2DContext } from "$lib/ecs/components/canvas-2d-context"
-	import { Vector } from "$lib/ecs/components/drawings"
 	import { CanvasPointsSystem } from "$lib/ecs/systems/canvas-points"
 	import Toolbox from "$lib/components/toolbox.svelte"
 	import {
@@ -23,6 +22,7 @@
 	} from "$lib/ecs/components/paintbrushes"
 	import { CanvasPaintBrushSystem } from "$lib/ecs/systems/canvas-tools/paintbrush"
 	import { appTheme } from "$lib/stores/app-config"
+	import { Vector } from "$lib/types/vector"
 
 	let canvas: HTMLCanvasElement | null
 	let currentLayer: Layer | null = null

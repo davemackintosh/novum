@@ -6,28 +6,11 @@ import { RxDBLeaderElectionPlugin } from "rxdb/plugins/leader-election"
 import { addRxPlugin, createRxDatabase, type RxDatabase } from "rxdb"
 import { getRxStorageDexie } from "rxdb/plugins/storage-dexie"
 import { Events } from "./collections/events"
-import { Project } from "./collections/projects"
 import { Config } from "./collections/config"
 import { ColorPalette } from "./collections/color-palette"
+import { CollectionNames, DatabaseType } from "./types"
 import { browser } from "$app/environment"
-
-const enum CollectionNames {
-	EVENTS = "events",
-	PROJECTS = "projects",
-	CONFIG = "config",
-	COLOR_PALETTES = "color_palettes",
-}
-
-type DatabaseType = {
-	[CollectionNames.EVENTS]: typeof Events.Collection
-	[CollectionNames.PROJECTS]: typeof Project.Collection
-	[CollectionNames.CONFIG]: typeof Config.Collection
-	[CollectionNames.COLOR_PALETTES]: typeof ColorPalette.Collection
-}
-
-interface TableCodec<InstanceType, PersistableType = InstanceType> {
-	encode(instance: InstanceType): PersistableType
-}
+import { ProjectView } from "$lib/cqrs/views/project"
 
 /**
  * Create a new database instance and initialize the collections.
@@ -62,26 +45,26 @@ async function getDatabase(): Promise<RxDatabase<DatabaseType>> {
 			schema: Events.SCHEMA,
 			methods: {
 				decode: Events.fromDatabase,
-			}
+			},
 		},
 		[CollectionNames.PROJECTS]: {
-			schema: Project.SCHEMA,
+			schema: ProjectView.SCHEMA,
 			methods: {
-				decode: Project.fromDatabase,
-			}
+				decode: ProjectView.fromDatabase,
+			},
 		},
 		[CollectionNames.CONFIG]: {
 			schema: Config.SCHEMA,
 			methods: {
 				decode: Config.fromDatabase,
-			}
+			},
 		},
 		[CollectionNames.COLOR_PALETTES]: {
 			schema: ColorPalette.SCHEMA,
 			methods: {
 				decode: ColorPalette.fromDatabase,
-			}
-		}
+			},
+		},
 	})
 
 	await db.waitForLeadership()
@@ -91,4 +74,4 @@ async function getDatabase(): Promise<RxDatabase<DatabaseType>> {
 
 const dbInstance: RxDatabase<DatabaseType> = await getDatabase()
 
-export { getDatabase, dbInstance, type TableCodec, CollectionNames }
+export { getDatabase, dbInstance }

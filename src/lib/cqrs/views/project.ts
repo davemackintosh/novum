@@ -1,5 +1,5 @@
 import { P, match } from "ts-pattern"
-import type { RxDocument } from "rxdb"
+import type { RxCollection, RxDocument, RxJsonSchema } from "rxdb"
 import { View } from "$lib/cqrs"
 import {
 	JoinEvent,
@@ -10,16 +10,32 @@ import {
 	SetLayerNameEvent,
 	type ProjectEvents,
 } from "$lib/types/commands-events"
-import type { ColorPalettes } from "$lib/types/color-palette"
-import type { TableCodec } from "$lib/rxdb/database"
+import type { ColorPalettes } from "$lib/rxdb/collections/color-palette"
+import type { StaticMethods, TableCodec } from "$lib/rxdb/types"
 
-class Layer {
+interface ILayer {
+	id: string
+	name?: string
+}
+
+class Layer implements TableCodec<Layer, ILayer> {
 	id: string
 	name?: string
 
 	constructor(id: string, name?: string) {
 		this.id = id
 		this.name = name
+	}
+
+	encode(instance: Layer): ILayer {
+		return {
+			id: instance.id,
+			name: instance.name,
+		}
+	}
+
+	static fromDatabase(instance: ILayer): Layer {
+		return new Layer(instance.id, instance.name)
 	}
 
 	static fromCommand(command: NewLayerCommand): Layer {
@@ -30,43 +46,45 @@ class Layer {
 interface IProjectView {
 	id?: string | null
 	name?: string | null
-	layers: Layer[]
+	layers: ILayer[]
 	members: string[]
 	colorPalettes: ColorPalettes
 }
 
-class ProjectView extends View implements IProjectView, TableCodec<ProjectView, IProjectView> {
-	id?: string | null
-	name?: string | null
-	layers: Layer[]
-	members: string[]
-	colorPalettes: ColorPalettes
+class ProjectView
+	extends View
+	implements IProjectView, TableCodec<ProjectView, IProjectView> {
+	id: string
+	name: string
+	layers: Layer[] = []
+	members: string[] = []
+	colorPalettes: ColorPalettes = []
 
-	constructor(name?: string | null, id?: string | null) {
+	constructor(name: string, id: string, layers: Layer[] = [], members: string[] = [], colorPalettes: ColorPalettes) {
 		super()
 
 		this.id = id
 		this.name = name
-		this.layers = []
-		this.members = []
-		this.colorPalettes = []
+		this.layers = layers
+		this.members = members
+		this.colorPalettes = colorPalettes
 	}
 
-	decode(persistable: RxDocument<IProjectView>): ProjectView {
-		this.id = persistable.get("id")
-		this.name = persistable.get("name")
-		this.layers = persistable.get("layers").map((layer) => new Layer(layer.id, layer.name))
-		this.members = persistable.get("members")
-		this.colorPalettes = persistable.get("colorPalettes")
-
-		return this
+	static fromDatabase(persistable: RxDocument<IProjectView>): ProjectView {
+		return new ProjectView(
+			persistable.get("name"),
+			persistable.get("id"),
+			persistable.get("layers").map((layer: ILayer) => Layer.fromDatabase(layer)),
+			persistable.get("members"),
+			persistable.get("colorPalettes"),
+		)
 	}
 
 	encode(instance: ProjectView): IProjectView {
 		return {
 			id: instance.id,
 			name: instance.name,
-			layers: instance.layers.map((layer) => ({ id: layer.id, name: layer.name })),
+			layers: instance.layers.map((layer: Layer) => ({ id: layer.id, name: layer.name })),
 			members: instance.members,
 			colorPalettes: instance.colorPalettes,
 		}
@@ -116,6 +134,75 @@ class ProjectView extends View implements IProjectView, TableCodec<ProjectView, 
 			})
 			.otherwise(() => this)
 	}
+
+	static SCHEMA: RxJsonSchema<IProjectView> = {
+		version: 0,
+		title: "projects",
+		description: "Persistance of the ProjectView.",
+		primaryKey: "id",
+		type: "object",
+		keyCompression: true,
+		required: ["id", "name", "layers", "members"],
+		properties: {
+			id: {
+				type: "string",
+				maxLength: 50,
+			},
+			name: {
+				type: "string",
+			},
+			layers: {
+				type: "array",
+				items: {
+					type: "object",
+				},
+			},
+			members: {
+				type: "array",
+				items: {
+					type: "string",
+				},
+			},
+			colorPalettes: {
+				type: "array",
+				items: {
+					type: "object",
+					properties: {
+						id: {
+							type: "string",
+							maxLength: 255,
+						},
+						name: {
+							type: "string",
+						},
+						colors: {
+							type: "array",
+							items: {
+								type: "object",
+								properties: {
+									x: {
+										type: "string",
+									},
+									y: {
+										type: "string",
+									},
+									z: {
+										type: "string",
+									},
+								},
+								required: ["x", "y", "z"],
+								additionalProperties: false,
+							},
+						},
+					},
+					required: ["id", "name", "colors"],
+					additionalProperties: false,
+				},
+			},
+		},
+	} as const
+
+	static Collection: RxCollection<IProjectView, StaticMethods<ProjectView>>
 }
 
-export { Layer, ProjectView, type IProjectView }
+export { Layer, ProjectView, type IProjectView, type ILayer }

@@ -1,5 +1,5 @@
 import { type RxCollection, type RxDocument, type RxJsonSchema } from "rxdb"
-import type { TableCodec } from "../database"
+import type { StaticMethods, TableCodec } from "../types"
 
 interface IConfig {
 	userAddress: string
@@ -38,7 +38,7 @@ class Config implements IConfig, TableCodec<Config, IConfig> {
 		},
 	} as const
 
-	static Collection: RxCollection<IConfig>
+	static Collection: RxCollection<IConfig, StaticMethods<Config>>
 }
 
 export { Config, type IConfig }

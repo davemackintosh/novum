@@ -1,5 +1,5 @@
 import { match } from "ts-pattern"
-import { Vector } from "../drawings"
+import { Vector } from "$lib/types/vector"
 
 interface PaintbrushStroke {
 	points: Vector[]

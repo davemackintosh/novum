@@ -38,4 +38,3 @@ export class PointerTool extends ToolboxToolBase implements System {
 			.otherwise(() => false)
 	}
 }
-

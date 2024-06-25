@@ -1,5 +1,5 @@
 import { type RxCollection, type RxDocument, type RxJsonSchema } from "rxdb"
-import type { TableCodec } from "../database"
+import type { StaticMethods, TableCodec } from "../types"
 import type { ProjectEvents } from "$lib/types/commands-events"
 
 interface Metadata {
@@ -119,7 +119,7 @@ class Events implements IEvent, TableCodec<Events, IEvent> {
 		},
 	} as const
 
-	static Collection: RxCollection<IEvent>
+	static Collection: RxCollection<IEvent, StaticMethods<IEvent>>
 }
 
 export { Events, type IEvent as PersistableEvent, type Metadata }
