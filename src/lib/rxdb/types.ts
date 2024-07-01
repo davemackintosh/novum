@@ -17,13 +17,5 @@ type DatabaseType = {
 	[CollectionNames.COLOR_PALETTES]: typeof ColorPalette.Collection
 }
 
-interface StaticMethods<T> {
-	decode(): T
-}
-
-interface TableCodec<InstanceType, PersistableType = InstanceType> {
-	encode(instance: InstanceType): PersistableType
-}
-
-export { type TableCodec, CollectionNames, type StaticMethods, type DatabaseType }
+export { CollectionNames, type DatabaseType }
 

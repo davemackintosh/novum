@@ -35,8 +35,8 @@ abstract class Aggregate<Events extends ProjectEvents, Commands extends ProjectC
 	): Promise<Events[]>
 }
 
-abstract class View<Events extends ProjectEvents = ProjectEvents> {
-	abstract handle_event(_event: Events): View<Events>
+interface View<Events extends ProjectEvents = ProjectEvents> {
+	handle_event(_event: Events): View<Events>
 }
 
 abstract class Query<

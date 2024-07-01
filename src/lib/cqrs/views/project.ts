@@ -1,6 +1,6 @@
 import { P, match } from "ts-pattern"
 import type { RxCollection, RxDocument, RxJsonSchema } from "rxdb"
-import { View } from "$lib/cqrs"
+import { type View } from "$lib/cqrs"
 import {
 	JoinEvent,
 	LeaveEvent,
@@ -11,14 +11,14 @@ import {
 	type ProjectEvents,
 } from "$lib/types/commands-events"
 import type { ColorPalettes } from "$lib/rxdb/collections/color-palette"
-import type { StaticMethods, TableCodec } from "$lib/rxdb/types"
+import type { StaticMethods } from "$lib/rxdb/collection-interfaces"
 
 interface ILayer {
 	id: string
 	name?: string
 }
 
-class Layer implements TableCodec<Layer, ILayer> {
+class Layer {
 	id: string
 	name?: string
 
@@ -52,8 +52,7 @@ interface IProjectView {
 }
 
 class ProjectView
-	extends View
-	implements IProjectView, TableCodec<ProjectView, IProjectView> {
+	implements IProjectView, View {
 	id: string
 	name: string
 	layers: Layer[] = []
@@ -61,8 +60,6 @@ class ProjectView
 	colorPalettes: ColorPalettes = []
 
 	constructor(name: string, id: string, layers: Layer[] = [], members: string[] = [], colorPalettes: ColorPalettes) {
-		super()
-
 		this.id = id
 		this.name = name
 		this.layers = layers

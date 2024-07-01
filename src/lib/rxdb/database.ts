@@ -8,7 +8,7 @@ import { getRxStorageDexie } from "rxdb/plugins/storage-dexie"
 import { Events } from "./collections/events"
 import { Config } from "./collections/config"
 import { ColorPalette } from "./collections/color-palette"
-import { CollectionNames, DatabaseType } from "./types"
+import { CollectionNames, type DatabaseType } from "./types"
 import { browser } from "$app/environment"
 import { ProjectView } from "$lib/cqrs/views/project"
 
@@ -44,25 +44,37 @@ async function getDatabase(): Promise<RxDatabase<DatabaseType>> {
 		[CollectionNames.EVENTS]: {
 			schema: Events.SCHEMA,
 			methods: {
-				decode: Events.fromDatabase,
+				decode: function() {
+					// @ts-expect-error TypeScript says this is the incorrect type but it does actually work and I couldn't find or convert to a type safely.
+					return Events.fromDatabase(this)
+				}
 			},
 		},
 		[CollectionNames.PROJECTS]: {
 			schema: ProjectView.SCHEMA,
 			methods: {
-				decode: ProjectView.fromDatabase,
+				decode: function() {
+					// @ts-expect-error TypeScript says this is the incorrect type but it does actually work and I couldn't find or convert to a type safely.
+					return ProjectView.fromDatabase(this)
+				}
 			},
 		},
 		[CollectionNames.CONFIG]: {
 			schema: Config.SCHEMA,
 			methods: {
-				decode: Config.fromDatabase,
+				decode: function() {
+					// @ts-expect-error TypeScript says this is the incorrect type but it does actually work and I couldn't find or convert to a type safely.
+					return Config.fromDatabase(this)
+				}
 			},
 		},
 		[CollectionNames.COLOR_PALETTES]: {
 			schema: ColorPalette.SCHEMA,
 			methods: {
-				decode: ColorPalette.fromDatabase,
+				decode: function() {
+					// @ts-expect-error TypeScript says this is the incorrect type but it does actually work and I couldn't find or convert to a type safely.
+					return ColorPalette.fromDatabase(this)
+				}
 			},
 		},
 	})

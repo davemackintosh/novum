@@ -1,5 +1,5 @@
 import type { RxDocument, RxJsonSchema, RxCollection } from "rxdb"
-import type { StaticMethods, TableCodec } from "../types"
+import type { StaticMethods } from "../collection-interfaces"
 import type { Vector } from "$lib/types/vector"
 
 interface IColorPalette {
@@ -8,7 +8,7 @@ interface IColorPalette {
 	colors: Vector[]
 }
 
-class ColorPalette implements IColorPalette, TableCodec<ColorPalette, IColorPalette> {
+class ColorPalette implements IColorPalette {
 	colors: Vector[] = []
 	name?: string
 	id: string = ""
@@ -79,6 +79,4 @@ class ColorPalette implements IColorPalette, TableCodec<ColorPalette, IColorPale
 	static Collection: RxCollection<IColorPalette, StaticMethods<ColorPalette>>
 }
 
-type ColorPalettes = ColorPalette[]
-
-export { ColorPalette, type IColorPalette, type ColorPalettes }
+export { ColorPalette, type IColorPalette }

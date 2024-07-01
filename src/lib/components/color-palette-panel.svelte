@@ -9,22 +9,23 @@
 	import { onMount, createEventDispatcher } from "svelte"
 	import ColorPicker from "svelte-awesome-color-picker"
 	import PalettePicker from "./palette-picker.svelte"
-	import { dbInstance, type TableCodec } from "$lib/rxdb/database"
-	import type { ColorPalette, ColorPalettes } from "$lib/types/color-palette"
+	import { dbInstance } from "$lib/rxdb/database"
+	import { ColorPalette } from "$lib/rxdb/collections/color-palette"
+	import { CollectionNames } from "$lib/rxdb/types"
 
-	let palettes: ColorPalettes = []
+	let palettes: ColorPalette[] = []
 	let currentTab: ColorPaletteToolTab = ColorPaletteToolTab.PalettePicker
 	let currentPalette: ColorPalette | undefined
 
 	const dispatcher = createEventDispatcher()
 
 	onMount(async () => {
-		const query = dbInstance.color_palette.find()
-		palettes = await query.exec()
+		const query = dbInstance[CollectionNames.COLOR_PALETTES].find()
+		palettes = (await query.exec()).map((p) => p.decode())
 
 		query.$.subscribe((changes) => {
 			console.log("Changes detected:", changes)
-			palettes = changes
+			palettes = changes.map((p) => p.decode())
 		})
 	})
 </script>

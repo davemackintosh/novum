@@ -4,11 +4,12 @@
 		type RgbaColor,
 	} from "svelte-awesome-color-picker"
 	import { Vector } from "$lib/types/vector"
-	import type { ColorPalette, ColorPalettes } from "$lib/rxdb/collections/color-palette"
-	import { CollectionNames, dbInstance } from "$lib/rxdb/database"
+	import type { ColorPalette } from "$lib/rxdb/collections/color-palette"
+	import { CollectionNames } from "$lib/rxdb/types"
+	import { dbInstance } from "$lib/rxdb/database"
 
 	let newPaletteName = ""
-	export let palettes: ColorPalettes
+	export let palettes: ColorPalette[]
 
 	async function requestNewPalette() {
 		const created = await dbInstance[CollectionNames.COLOR_PALETTES].insert({

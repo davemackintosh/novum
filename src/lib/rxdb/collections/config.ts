@@ -1,11 +1,11 @@
 import { type RxCollection, type RxDocument, type RxJsonSchema } from "rxdb"
-import type { StaticMethods, TableCodec } from "../types"
+import type { StaticMethods } from "../collection-interfaces"
 
 interface IConfig {
 	userAddress: string
 }
 
-class Config implements IConfig, TableCodec<Config, IConfig> {
+class Config implements IConfig {
 	userAddress: string
 
 	constructor(userAddress: string) {

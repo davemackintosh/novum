@@ -1,5 +1,5 @@
 import { type RxCollection, type RxDocument, type RxJsonSchema } from "rxdb"
-import type { StaticMethods, TableCodec } from "../types"
+import type { StaticMethods } from "../collection-interfaces"
 import type { ProjectEvents } from "$lib/types/commands-events"
 
 interface Metadata {
@@ -18,7 +18,7 @@ interface IEvent {
 	timestamp: number
 }
 
-class Events implements IEvent, TableCodec<Events, IEvent> {
+class Events implements IEvent {
 	aggregateTypeId: string
 	aggregateType: string
 	aggregateId: string
