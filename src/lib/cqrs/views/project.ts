@@ -10,7 +10,7 @@ import {
 	SetLayerNameEvent,
 	type ProjectEvents,
 } from "$lib/types/commands-events"
-import type { ColorPalettes } from "$lib/rxdb/collections/color-palette"
+import type { ColorPalette } from "$lib/rxdb/collections/color-palette"
 import type { StaticMethods } from "$lib/rxdb/collection-interfaces"
 
 interface ILayer {
@@ -34,7 +34,7 @@ class Layer {
 		}
 	}
 
-	static fromDatabase(instance: ILayer): Layer {
+	static decode(instance: ILayer): Layer {
 		return new Layer(instance.id, instance.name)
 	}
 
@@ -48,33 +48,27 @@ interface IProjectView {
 	name?: string | null
 	layers: ILayer[]
 	members: string[]
-	colorPalettes: ColorPalettes
+	colorPalettes: ColorPalette[]
 }
 
 class ProjectView
 	implements IProjectView, View {
-	id: string
-	name: string
+	id!: string
+	name!: string
 	layers: Layer[] = []
 	members: string[] = []
-	colorPalettes: ColorPalettes = []
+	colorPalettes: ColorPalette[] = []
 
-	constructor(name: string, id: string, layers: Layer[] = [], members: string[] = [], colorPalettes: ColorPalettes) {
-		this.id = id
-		this.name = name
-		this.layers = layers
-		this.members = members
-		this.colorPalettes = colorPalettes
-	}
+	static decode(persistable: RxDocument<IProjectView>): ProjectView {
+		const view = new ProjectView()
 
-	static fromDatabase(persistable: RxDocument<IProjectView>): ProjectView {
-		return new ProjectView(
-			persistable.get("name"),
-			persistable.get("id"),
-			persistable.get("layers").map((layer: ILayer) => Layer.fromDatabase(layer)),
-			persistable.get("members"),
-			persistable.get("colorPalettes"),
-		)
+		view.id = persistable.get("id")
+		view.name = persistable.get("name")
+		view.layers = persistable.get("layers").map((layer: ILayer) => Layer.decode(layer))
+		view.members = persistable.get("members")
+		view.colorPalettes = persistable.get("colorPalettes")
+
+		return view
 	}
 
 	encode(instance: ProjectView): IProjectView {

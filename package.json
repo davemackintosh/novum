@@ -12,31 +12,31 @@
 		"format": "prettier --write ."
 	},
 	"devDependencies": {
-		"@eslint/js": "^9.6.0",
+		"@eslint/js": "^9.8.0",
 		"@sveltejs/adapter-auto": "^3.2.2",
-		"@sveltejs/kit": "^2.5.18",
+		"@sveltejs/kit": "^2.5.19",
 		"@sveltejs/vite-plugin-svelte": "^3.1.1",
-		"@types/eslint": "^8.56.10",
-		"eslint": "^9.6.0",
+		"@types/eslint": "^9.6.0",
+		"eslint": "^9.8.0",
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-import": "^2.29.1",
-		"eslint-plugin-svelte": "^2.41.0",
-		"globals": "^15.7.0",
-		"prettier": "^3.3.2",
-		"prettier-plugin-svelte": "^3.2.5",
+		"eslint-plugin-svelte": "^2.43.0",
+		"globals": "^15.9.0",
+		"prettier": "^3.3.3",
+		"prettier-plugin-svelte": "^3.2.6",
 		"svelte": "^4.2.18",
-		"svelte-check": "^3.8.4",
+		"svelte-check": "^3.8.5",
 		"tslib": "^2.6.3",
-		"typescript": "^5.5.3",
-		"typescript-eslint": "^7.15.0",
-		"vite": "^5.3.2"
+		"typescript": "^5.5.4",
+		"typescript-eslint": "^8.0.0",
+		"vite": "^5.3.5"
 	},
 	"type": "module",
 	"packageManager": "yarn@4.3.0",
 	"dependencies": {
-		"rxdb": "^15.25.0",
+		"rxdb": "^15.30.0",
 		"rxjs": "^7.8.1",
-		"svelte-awesome-color-picker": "^3.1.0",
+		"svelte-awesome-color-picker": "^3.1.2",
 		"ts-pattern": "^5.2.0"
 	}
 }

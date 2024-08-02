@@ -12,6 +12,10 @@ import { CollectionNames, type DatabaseType } from "./types"
 import { browser } from "$app/environment"
 import { ProjectView } from "$lib/cqrs/views/project"
 
+// I went down this path and regret having done so because while
+// rxdb is a great piece of software, I don't like it. I should
+// have and probably will use Dexie directly as the API is nicer
+
 /**
  * Create a new database instance and initialize the collections.
  */

@@ -30,7 +30,7 @@
 <div class="app">
 	<aside>
 		<p>
-			{$userAddress}
+			<input readonly value={$userAddress} />
 			<small>
 				Save this somewhere safe, this is your unique Novum address. Lose this and you
 				lose all your work and invites.
